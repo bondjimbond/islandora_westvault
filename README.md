@@ -1,18 +1,14 @@
-# Scholar Embargo.
+# Islandora Westvault
 
 ## Introduction
 
-Support embargo management in Islandora Scholar.
+Flag Islandora objects for automated preservation in WestVault.
 
 ## Requirements
 
 The following Drupal modules are required:
 
  * [Islandora](https://github.com/islandora/islandora)
- * [Islandora_Scholar](https://github.com/islandora/islandora_scholar)
-   * Islandora Scholar does not need to be enabled to run this module, but it must be installed in order to preserve Scholar Embargo's location in the `modules` directory.
- * [Islandora XACML API](https://github.com/islandora/islandora_xacml_editor/tree/7.x/api)
- * [Rules](https://www.drupal.org/project/rules)
 
 ## Installation
 
@@ -20,8 +16,7 @@ The following Drupal modules are required:
 
 ## Configuration
 
-The automatic lifting of embargoes can be configured using rules, a batch
-script can be ran to remove out of date embargoes.
+
 
 ## Troubleshooting/Issues
 
@@ -34,7 +29,7 @@ Having problems or solved a problem? Check out the Islandora google groups for a
 
 Current maintainers:
 
-* [Bryan Brown](https://github.com/bryjbrown)
+* [Brandon Weigel](https://github.com/bondjimbond)
 
 ## Development
 
