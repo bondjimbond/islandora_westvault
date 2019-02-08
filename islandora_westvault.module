@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * @file
+ * Implements hooks and callbacks for this module.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_westvault_menu() {
+  $items['islandora/object/%islandora_object/manage/preservation'] = array(
+    'title' => 'Preservation',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_westvault_form', 2),
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array(2),
+    'file' => 'includes/management_form.inc',
+  );
+  $items['admin/islandora/tools/preservation'] = array(
+    'title' => 'Islandora WestVault Preservation',
+    'description' => 'Configure the Islandora WestVault module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_westvault_admin'),
+    'file' => 'includes/admin.form.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_cron().
+ *
+ * Detect items whose embargo is either about to expire to notify or has expired
+ * to lift.
+ */
+function islandora_westvault_cron() {
+  // Goal: Detect objects with the preservation flag and preserve them. Skip objects already preserved.
+  // Use SPARQL?
+}
+
+/**
+ * Set an item to be preserved.
+ */
+function islandora_westvault_set_preservation($object) {
+  if (empty($object['PRESERVATION'])) {
+    $ds = $object->constructDatastream('PRESERVATION', 'X');
+    $object->ingestDatastream($ds);
+  }
+}

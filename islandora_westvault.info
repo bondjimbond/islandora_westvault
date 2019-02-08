@@ -1,0 +1,7 @@
+name = Islandora WestVault
+description = Automates preservation of Islandora objects in WestVault.
+configure = admin/islandora/tools/westvault
+package = Islandora Utility Modules
+dependencies[] = islandora
+core = 7.x
+version = 7.x-dev
