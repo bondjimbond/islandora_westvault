@@ -15,10 +15,9 @@
  * @return array
  *   Returns the form.
  */
-function islandora_westvault_form($form, &$form_state, $object) {
-  $get_default_value = function($name, $default) use(&$form_state) {
-    return isset($form_state['values'][$name]) ? $form_state['values'][$name] : variable_get($name, $default);
-  };
+function islandora_westvault_form($form, &$form_state, AbstractObject $object) {
+  $pid = $object->id;
+  print_r($pid);
   $form['islandora_westvault_preserve_object'] = array(
     '#type' => 'checkbox',
     '#title' => t('Preserve this object?'),
@@ -29,7 +28,20 @@ function islandora_westvault_form($form, &$form_state, $object) {
     '#type' => 'submit',
     '#value' => t('Save Configuration'),
   );
+
   return array($form);
+}
+
+function islandora_westvault_form_submit($form, &$form_state) {
+print_r($form_state['values']);
+print_r('hoho');
+  if ($form['islandora_westvault_preserve_object'] == TRUE) {
+print_r("Preserve true");
+  if (empty($object['PRESERVATION'])) {
+    $ds = $object->constructDatastream('PRESERVATION', 'X');
+    $object->ingestDatastream($ds);
+  }
+  }
 }
 
 function islandora_westvault_collection_manage_form(array $form, array &$form_state) {
