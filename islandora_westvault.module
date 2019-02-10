@@ -17,7 +17,7 @@ function islandora_westvault_menu() {
     'access arguments' => array(2),
     'file' => 'includes/management_form.inc',
   );
-  $items['admin/islandora/tools/preservation'] = array(
+  $items['admin/islandora/tools/westvault'] = array(
     'title' => 'Islandora WestVault Preservation',
     'description' => 'Configure the Islandora WestVault module.',
     'page callback' => 'drupal_get_form',
