@@ -27,6 +27,8 @@ function islandora_westvault_form($form, &$form_state, AbstractObject $object) {
     '#type' => 'checkbox',
     '#title' => t('Preserve this object?'),
     '#default_value' => $checkbox_default,
+    '#description' => 'Checking this box creates a PRESERVATION datastream, which will flag this object for preservation on the next cron run.
+      Un-checking this box will delete the PRESERVATION datastream, which will not delete the preserved objects, but stop the preservation of updates to the object.',
   );
   $form['actions']['submit'] = array(
     '#type' => 'submit',
@@ -40,9 +42,13 @@ function islandora_westvault_form_submit($form, &$form_state) {
   $object = islandora_object_load(arg(2));
   if ($form_state['values']['islandora_westvault_preserve_object'] === 1) {
     if (empty($object['PRESERVATION'])) {
+      $time = time();
       $ds = $object->constructDatastream('PRESERVATION', 'X');
       $ds->label = 'WestVault Preservation data';
-      $ds->setContentFromString('<preservation></preservation>');
+      $ds->setContentFromString('<preservation>
+  <datePreserved>' . date("Y-m-d H:i:s", $time) . '</datePreserved>
+  <preservedTimestamp>' . $time . '</preservedTimestamp>
+  </preservation>');
       $object->ingestDatastream($ds);
       drupal_set_message('Preservation data created');
     }
