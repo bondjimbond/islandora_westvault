@@ -17,10 +17,16 @@
  */
 function islandora_westvault_form($form, &$form_state, AbstractObject $object) {
   $pid = $object->id;
+  if ($object['PRESERVATION']) {
+    $checkbox_default = 1;
+  }
+  else {
+    $checkbox_default = 0;
+  }
   $form['islandora_westvault_preserve_object'] = array(
     '#type' => 'checkbox',
     '#title' => t('Preserve this object?'),
-    '#default_value' => variable_get('islandora_westvault_preserve_object', 0),
+    '#default_value' => $checkbox_default,
   );
   $form['actions']['submit'] = array(
     '#type' => 'submit',
@@ -31,15 +37,19 @@ function islandora_westvault_form($form, &$form_state, AbstractObject $object) {
 }
 
 function islandora_westvault_form_submit($form, &$form_state) {
-  variable_set('islandora_westvault_preserve_object', $form_state['values']['islandora_westvault_preserve_object']);
+  $object = islandora_object_load(arg(2));
   if ($form_state['values']['islandora_westvault_preserve_object'] === 1) {
-    $object = islandora_object_load(arg(2));
     if (empty($object['PRESERVATION'])) {
       $ds = $object->constructDatastream('PRESERVATION', 'X');
       $ds->label = 'WestVault Preservation data';
       $ds->setContentFromString('<preservation></preservation>');
       $object->ingestDatastream($ds);
+      drupal_set_message('Preservation data created');
     }
+  }
+  else {
+    $object->purgeDatastream('PRESERVATION');
+    drupal_set_message('Preservation data removed');
   }
 }
 
