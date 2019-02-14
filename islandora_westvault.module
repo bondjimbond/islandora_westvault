@@ -4,6 +4,25 @@
  * @file
  * Implements hooks and callbacks for this module.
  */
+/**
+ * Implements hook_permission().
+ */
+function islandora_westvault_permission() {
+  $permissions = array(
+    'ISLANDORA_WESTVAULT_SET_PRESERVATION' => array(
+      'title' => t('Flag objects for preservation'),
+      'description' => t('Select objects to be preserved.'),
+      'restrict access' => TRUE,
+    ),
+    'ISLANDORA_WESTVAULT_ADMIN' => array(
+      'title' => t('Administer Islandora Westvault'),
+      'description' => t('Configure the Islandora Westvault module'),
+      'restrict access' => TRUE,
+    ),
+  );
+  return $permissions;
+}
+
 
 /**
  * Implements hook_menu().
@@ -14,7 +33,10 @@ function islandora_westvault_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('islandora_westvault_form', 2),
     'type' => MENU_LOCAL_TASK,
-    'access arguments' => array(2),
+    'access arguments' => array(
+      array(
+        'ISLANDORA_WESTVAULT_SET_PRESERVATION',
+      ), 2),
     'file' => 'includes/management_form.inc',
   );
   $items['admin/islandora/tools/westvault'] = array(
@@ -23,6 +45,20 @@ function islandora_westvault_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('islandora_westvault_admin'),
     'file' => 'includes/admin.form.inc',
+    'access arguments' => array(
+      array(
+        'ISLANDORA_WESTVAULT_ADMIN',
+      ), 2),
+  );
+  $items['admin/islandora/tools/westvault/objects'] = array(
+    'title' => 'Preserved objects list',
+    'description' => 'See all preserved objects',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_westvault_show'),
+    'access arguments' => array(
+      array(
+        'ISLANDORA_WESTVAULT_ADMIN',
+      ), 2),
   );
   return $items;
 }
@@ -36,6 +72,23 @@ function islandora_westvault_menu() {
 function islandora_westvault_cron() {
   // Goal: Detect objects with the preservation flag and preserve them. Skip objects already preserved.
   // Use SPARQL?
+  module_load_include('inc', 'islandora_westvault', 'includes/utilities');
+  // Prepare list of PIDs with PRESERVATION datastream
+  $timestamp = time();
+/*  $last_run = variable_get('islandora_westvault_last_run', '');
+  $run_after = variable_get('islandora_westvault_run_after', '23:00');
+  if (!empty($last_run)) {
+    $min_wait_time = strtotime('+23 hours +56 minutes', $last_run);
+  } */
+//  if ((empty($last_run) || $timestamp > $min_wait_time) && (date('H:i') > date('H:i', strtotime($run_after))) {
+    // Run the thing, then set the last-update variable.
+    $object_list = islandora_westvault_get_preservation_targets();  
+    $xml = new SimpleXMLElement('<root/>');
+    array_walk_recursive($object_list, array ($xml, 'addChild'));
+    file_put_contents('/var/www/drupal/sites/object_list.txt', $xml->asXML());
+    //  file_put_contents('/var/www/drupal/sites/object_list.txt', serialize($object_list));
+//    variable_set('islandora_westvault_last_run', $timestamp);
+//  }
 }
 
 /**
@@ -46,4 +99,17 @@ function islandora_westvault_set_preservation($object) {
     $ds = $object->constructDatastream('PRESERVATION', 'X');
     $object->ingestDatastream($ds);
   }
+}
+
+/**
+ * Admin settings form builder.
+ */
+function islandora_westvault_admin_settings() {
+
+}
+
+function islandora_westvault_show() {
+  module_load_include('inc', 'islandora_westvault', 'includes/utilities');
+  $object_list = islandora_westvault_get_preservation_targets();
+  return $object_list; 
 }

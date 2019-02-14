@@ -16,6 +16,12 @@
  *   Returns the form.
  */
 function islandora_westvault_form($form, &$form_state, AbstractObject $object) {
+
+// Just testing the utilities
+module_load_include('inc', 'islandora_westvault', 'utilities');
+    $object_list = islandora_westvault_get_preservation_targets();
+print_r($object_list);
+
   $pid = $object->id;
   if ($object['PRESERVATION']) {
     $checkbox_default = 1;
