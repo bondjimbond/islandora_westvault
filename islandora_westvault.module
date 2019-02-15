@@ -78,6 +78,15 @@ function islandora_westvault_cron() {
   $timestamp = time();
   // Run the thing, then set the last-update variable.
   $object_list = islandora_westvault_get_preservation_targets();  
+
+  // Eliminate already-preserved objects from list
+  $filtered_list = array();
+  foreach ($object_list AS $object) {
+    $object_test = islandora_object_load($object);
+  // basically we're looking to edit the XML of the existing datastream 
+    $ds = $object_test["PRESERVATION"];
+  // going to use $ds -> setContentFromString, but first need to read the existing data and compare timestamps  
+  }
   $pid_location = variable_get('islandora_westvault_pid_file_location', '/tmp/');
   // Clear out the previous list of PIDs.
   // Use bag-it
@@ -87,6 +96,8 @@ function islandora_westvault_cron() {
     $object_get = islandora_object_load($object);
     file_put_contents($pid_location . 'object_list.txt', $object . PHP_EOL, FILE_APPEND);
     islandora_bagit_create_bag($object_get);
+  // Still todo: Update the PRESERVATION datastream to timestamp successful preservation
+
   }
 
 //    variable_set('islandora_westvault_last_run', $timestamp);
