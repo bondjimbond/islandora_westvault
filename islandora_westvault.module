@@ -4,6 +4,25 @@
  * @file
  * Implements hooks and callbacks for this module.
  */
+/**
+ * Implements hook_permission().
+ */
+/* function islandora_westvault_permission() {
+  $permissions = array(
+    'ISLANDORA_WESTVAULT_SET_PRESERVATION' => array(
+      'title' => t('Flag objects for preservation'),
+      'description' => t('Select objects to be preserved.'),
+      'restrict access' => TRUE,
+    ),
+    'ISLANDORA_WESTVAULT_ADMIN' => array(
+      'title' => t('Administer Islandora Westvault'),
+      'description' => t('Configure the Islandora Westvault module'),
+      'restrict access' => TRUE,
+    ),
+  );
+  return $permissions;
+}
+*/
 
 /**
  * Implements hook_menu().
@@ -15,6 +34,9 @@ function islandora_westvault_menu() {
     'page arguments' => array('islandora_westvault_form', 2),
     'type' => MENU_LOCAL_TASK,
     'access arguments' => array(2),
+/*      array(
+        'ISLANDORA_WESTVAULT_SET_PRESERVATION',
+      ), 2), */
     'file' => 'includes/management_form.inc',
   );
   $items['admin/islandora/tools/westvault'] = array(
@@ -22,7 +44,23 @@ function islandora_westvault_menu() {
     'description' => 'Configure the Islandora WestVault module.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('islandora_westvault_admin'),
+    'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/admin.form.inc',
+    'access arguments' => array(2),
+/*      array(
+        'ISLANDORA_WESTVAULT_ADMIN',
+      ), 2), */
+  );
+  $items['admin/islandora/tools/westvault/objects'] = array(
+    'title' => 'Preserved objects list',
+    'description' => 'See all preserved objects',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_westvault_show'),
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array(2),
+/*      array(
+        'ISLANDORA_WESTVAULT_ADMIN',
+      ), 2), */
   );
   return $items;
 }
@@ -35,7 +73,19 @@ function islandora_westvault_menu() {
  */
 function islandora_westvault_cron() {
   // Goal: Detect objects with the preservation flag and preserve them. Skip objects already preserved.
-  // Use SPARQL?
+  module_load_include('inc', 'islandora_westvault', 'includes/utilities');
+  // Prepare list of PIDs with PRESERVATION datastream
+  $timestamp = time();
+  // Run the thing, then set the last-update variable.
+  $object_list = islandora_westvault_get_preservation_targets();  
+  $pid_location = variable_get('islandora_westvault_pid_file_location', '/tmp/');
+  // Clear out the previous list of PIDs.
+  file_put_contents($pid_location . 'object_list.txt', '');
+  foreach ($object_list AS $object) {
+    file_put_contents($pid_location . 'object_list.txt', $object . PHP_EOL, FILE_APPEND);
+  }
+
+//    variable_set('islandora_westvault_last_run', $timestamp);
 }
 
 /**

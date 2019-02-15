@@ -1,22 +1,27 @@
 <?php
 /**
  * @file
- * Holds helper functions for embargo.
+ * Connects Connects with Bag-It to create bags and send them to WestVault.
  */
-
-/**
- * Provides all possible datastreams that can be embargoed.
- *
- * @param AbstractObject $object
- *   An AbstractObject representing an object within Fedora.
- *
- * @return array
- *   An array representing all the datastreams that are possible to be
- *   embargoed.
- */
-function islandora_scholar_embargo_get_embargoable_datastreams(AbstractObject $object) {
-  module_load_include('inc', 'islandora', 'includes/utilities');
-  $requirements = drupal_map_assoc(array_keys(islandora_get_datastreams_requirements($object)));
-  $current_ds = drupal_map_assoc(array_keys(iterator_to_array($object->getIterator())));
-  return array_merge($requirements, $current_ds);
+function islandora_westvault_get_preservation_targets() {
+  // Looking for the PRESERVATION datastream
+  $query = "fedora_datastreams_ms:PRESERVATION";
+  $qp = new islandoraSolrQueryProcessor();
+  $qp->buildQuery($query);
+  $qp->solrParams['fl'] = "PID";
+  $qp->executeQuery(FALSE);
+  try {
+    $results = $qp->islandoraSolrResult['response']['objects'];
+  }
+  catch (Exception $e) {
+    watchdog_exception('Islandora Westvault', $e, 'Got an exception searching for PRESERVATION datastreams.', array(), WATCHDOG_ERROR);
+    $results = array();
+  }
+  $objects = array();
+  if ($results) {
+    foreach ($results AS $result) {
+      $objects[] = $result['PID'];
+    }
+  }  
+  return $objects;
 }
