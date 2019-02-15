@@ -7,7 +7,7 @@
 /**
  * Implements hook_permission().
  */
-function islandora_westvault_permission() {
+/* function islandora_westvault_permission() {
   $permissions = array(
     'ISLANDORA_WESTVAULT_SET_PRESERVATION' => array(
       'title' => t('Flag objects for preservation'),
@@ -22,7 +22,7 @@ function islandora_westvault_permission() {
   );
   return $permissions;
 }
-
+*/
 
 /**
  * Implements hook_menu().
@@ -33,10 +33,10 @@ function islandora_westvault_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('islandora_westvault_form', 2),
     'type' => MENU_LOCAL_TASK,
-    'access arguments' => array(
-      array(
+    'access arguments' => array(2),
+/*      array(
         'ISLANDORA_WESTVAULT_SET_PRESERVATION',
-      ), 2),
+      ), 2), */
     'file' => 'includes/management_form.inc',
   );
   $items['admin/islandora/tools/westvault'] = array(
@@ -45,20 +45,20 @@ function islandora_westvault_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('islandora_westvault_admin'),
     'file' => 'includes/admin.form.inc',
-    'access arguments' => array(
-      array(
+    'access arguments' => array(2),
+/*      array(
         'ISLANDORA_WESTVAULT_ADMIN',
-      ), 2),
+      ), 2), */
   );
   $items['admin/islandora/tools/westvault/objects'] = array(
     'title' => 'Preserved objects list',
     'description' => 'See all preserved objects',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('islandora_westvault_show'),
-    'access arguments' => array(
-      array(
+    'access arguments' => array(2),
+/*      array(
         'ISLANDORA_WESTVAULT_ADMIN',
-      ), 2),
+      ), 2), */
   );
   return $items;
 }

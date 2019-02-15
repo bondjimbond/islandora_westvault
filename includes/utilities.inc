@@ -6,31 +6,28 @@
 
 function islandora_westvault_get_preservation_targets() {
   module_load_include('inc', 'islandora', 'includes/utilities');
-
-  // Build the Solr query
-  $query = 'fedora_datastreams_ms:PRESERVATION';
-  $objects = array();
-  $query_processor = new IslandoraSolrQueryProcessor();
-  $query_processor->solrQuery = $query;
-  $fields_to_return = 'PID,fgs_label_s,fedora_datastreams_ms,fedora_datastream_version_PRESERVATION_CREATED_ms,fedora_datastream_latest_PRESERVATION_CREATED_ms';
-
-  $query_processor->solrParams['fl'] = $fields_to_return;
-  $query_processor->solrLimit = '1000000';
-
-  $filters = array();
+  module_load_include('inc', 'islandora_solr', 'includes/query_processor');
 
 
-  if (count($filters)) {
-    $query_processor->solrParams['fq'] = implode(' OR ', $filters);
+// Second attempt at query building
+  $query = "fedora_datastreams_ms:PRESERVATION";
+
+  $qp = new islandoraSolrQueryProcessor();
+  $qp->buildQuery($query);
+  $qp->solrParams['fl'] = "PID";
+  $qp->executeQuery(FALSE);
+  try {
+    $results = $qp->islandoraSolrResult['response']['objects'];
   }
-
-  $query_processor->executeQuery(FALSE);
-
-      $objects[] = array(
-        'pid' => $object['solr_doc']['PID'],
-        'label' => $object['solr_doc']['fgs_label_s'],
-      );
-
-
+  catch (Exception $e) {
+    watchdog_exception('Islandora Westvault', $e, 'Got an exception searching for PRESERVATION datastreams.', array(), WATCHDOG_ERROR);
+    $results = array();
+  }
+  $objects = array();
+  if ($results) {
+    foreach ($results AS $result) {
+      $objects[] = $result['PID'];
+    }
+  }  
   return $objects;
 }

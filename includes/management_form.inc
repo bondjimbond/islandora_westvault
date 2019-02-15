@@ -18,7 +18,7 @@
 function islandora_westvault_form($form, &$form_state, AbstractObject $object) {
 
 // Just testing the utilities
-module_load_include('inc', 'islandora_westvault', 'utilities');
+module_load_include('inc', 'islandora_westvault', 'includes/utilities');
     $object_list = islandora_westvault_get_preservation_targets();
 print_r($object_list);
 
