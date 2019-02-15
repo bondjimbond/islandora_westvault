@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This file holds supporting admin functions for the embargo module.
+ * This file holds supporting admin functions for Islandora Westvault module.
  */
 
 /**
@@ -16,84 +16,31 @@
  * @return array
  *   The Drupal form definition.
  */
-function islandora_embargo_admin(array $form, array &$form_state) {
-  module_load_include('inc', 'islandora', 'includes/utilities');
-  $options = islandora_get_content_models();
-  if (module_exists('islandora_scholar')) {
-    $selected = variable_get('islandora_embargo_content_models', array('ir:citationCModel', 'ir:thesisCModel'));
-  }
-  else {
-    $selected = variable_get('islandora_embargo_content_models', array());
-  }
-  foreach ($selected as $cmodel) {
-    if (isset($options[$cmodel])) {
-      $options = array($cmodel => $options[$cmodel]) + $options;
-    }
-  }
-  foreach ($options as $key => $value) {
-    $rows[$key] = array(
-      'pid' => $key,
-      'title' => $value['label'],
-    );
-    in_array($key, $selected) ? $defaults[$key] = TRUE : $defaults[$key] = FALSE;
-  }
-  $header = array(
-    'pid' => array('data' => t('PID')),
-    'title' => array('data' => t('Content Model')),
+function islandora_westvault_admin(array $form, array &$form_state) {
+  $form['islandora_westvault_lockss_endpoint'] = array(
+    '#type' => 'textfield',
+    '#title' => t('LOCKSS endpoint'),
+    '#description' => t('URL to your LOCKSS API endpoint.'),
+    '#default_value' => variable_get('islandora_westvault_lockss_endpoint', ''),
   );
-  $form = array();
-  $form['email'] = array(
-    '#type' => 'checkbox',
-    '#title' => 'Suppress default email notifications for embargoes',
-    '#description' => 'Check if you have custom embargo notifications and would like to stop the default email notifications from sending.',
-    '#default_value' => variable_get('islandora_scholar_embargo_suppress_default_emails', FALSE),
+  $form['islandora_westvault_pid_file_location'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Temporary file location'),
+    '#description' => t('Path to your temporary file where PIDs of objects to be preserved are stored. Include trailing slash.'),
+    '#default_value' => variable_get('islandora_westvault_pid_file_location', '/tmp/'),
   );
-  $form['intro'] = array(
-    '#type' => 'item',
-    '#title' => 'Select Content Models for objects to be embargoed',
-    '#description' => t('Objects defined by selected Content Models will be eligible for embargoing.'),
+  $form['islandora_westvault_credentials_user'] = array(
+    '#type' => 'textfield',
+    '#title' => t('WestVault user ID'),
+    '#description' => t('User ID for WestVault API'),
+    '#default_value' => variable_get('islandora_westvault_credentials_user', ''),
   );
-  $form['the_table'] = array(
-    '#type' => 'tableselect',
-    '#header' => $header,
-    '#options' => $rows,
-    '#default_value' => $defaults,
+  $form['islandora_westvault_credentials_password'] = array(
+    '#type' => 'textfield',
+    '#title' => t('WestVault password'),
+    '#description' => t('Password for WestVault API'),
+    '#default_value' => variable_get('islandora_westvault_credentials_password', ''),
   );
-
-  $form['actions'] = array(
-    '#type' => 'actions',
-  );
-
-  $form['actions']['configure'] = array(
-    '#type' => 'submit',
-    '#value' => t('Configure Embargo'),
-    '#weight' => 1,
-    '#submit' => array('islandora_embargo_admin_submit'),
-  );
-
-  $form['actions']['reset'] = array(
-    '#type' => 'submit',
-    '#value' => t('Reset to default'),
-    '#weight' => 2,
-    '#submit' => array('islandora_embargo_admin_submit'),
-  );
-  return $form;
+  return system_settings_form($form);
 }
 
-/**
- * Submit handler reset all system settings.
- */
-function islandora_embargo_admin_submit(array $form, array &$form_state) {
-  $op = $form_state['clicked_button']['#value'];
-  switch ($op) {
-    case 'Reset to default':
-      variable_del('islandora_embargo_content_models');
-      variable_del('islandora_scholar_embargo_suppress_default_emails');
-      break;
-
-    default:
-      $enabled = array_filter($form_state['values']['the_table']);
-      variable_set('islandora_embargo_content_models', $enabled);
-      variable_set('islandora_scholar_embargo_suppress_default_emails', $form_state['values']['email']);
-  }
-}

@@ -3,15 +3,9 @@
  * @file
  * Connects Connects with Bag-It to create bags and send them to WestVault.
  */
-
 function islandora_westvault_get_preservation_targets() {
-  module_load_include('inc', 'islandora', 'includes/utilities');
-  module_load_include('inc', 'islandora_solr', 'includes/query_processor');
-
-
-// Second attempt at query building
+  // Looking for the PRESERVATION datastream
   $query = "fedora_datastreams_ms:PRESERVATION";
-
   $qp = new islandoraSolrQueryProcessor();
   $qp->buildQuery($query);
   $qp->solrParams['fl'] = "PID";
