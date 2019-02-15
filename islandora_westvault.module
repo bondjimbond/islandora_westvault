@@ -80,9 +80,13 @@ function islandora_westvault_cron() {
   $object_list = islandora_westvault_get_preservation_targets();  
   $pid_location = variable_get('islandora_westvault_pid_file_location', '/tmp/');
   // Clear out the previous list of PIDs.
+  // Use bag-it
+  module_load_include('module', 'islandora_bagit');
   file_put_contents($pid_location . 'object_list.txt', '');
   foreach ($object_list AS $object) {
+    $object_get = islandora_object_load($object);
     file_put_contents($pid_location . 'object_list.txt', $object . PHP_EOL, FILE_APPEND);
+    islandora_bagit_create_bag($object_get);
   }
 
 //    variable_set('islandora_westvault_last_run', $timestamp);
