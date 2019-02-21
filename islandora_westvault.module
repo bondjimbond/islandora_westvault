@@ -115,8 +115,11 @@ function islandora_westvault_cron() {
     $frag->appendXML($fragment);
     $dom->documentElement->appendChild($frag);
     $ds = $dom->saveXML($dom->documentElement);
+/* This part doesn't work
+    $preservationDatastream = setContentFromString($ds);
+    $object_get->ingestDatastream($preservationDatastream);
+*/ 
   }
-
 //    variable_set('islandora_westvault_last_run', $timestamp);
 }
 
