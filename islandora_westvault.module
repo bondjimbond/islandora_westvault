@@ -83,21 +83,38 @@ function islandora_westvault_cron() {
   $filtered_list = array();
   foreach ($object_list AS $object) {
     $object_test = islandora_object_load($object);
-  // basically we're looking to edit the XML of the existing datastream 
+    // Read the XML from the existing datastream, and look for an "already preserved" tag.
     $ds = $object_test["PRESERVATION"];
-  // going to use $ds -> setContentFromString, but first need to read the existing data and compare timestamps  
+    $xml = simplexml_load_string($ds->content);
+    if (!isset($xml->confirmPreserved)) {    
+      $filtered_list[] = $object;
+    }
   }
+
   $pid_location = variable_get('islandora_westvault_pid_file_location', '/tmp/');
   // Clear out the previous list of PIDs.
   // Use bag-it
   module_load_include('module', 'islandora_bagit');
   file_put_contents($pid_location . 'object_list.txt', '');
-  foreach ($object_list AS $object) {
+
+  foreach ($filtered_list AS $object) {
+//foreach($object_list AS $object) {
     $object_get = islandora_object_load($object);
     file_put_contents($pid_location . 'object_list.txt', $object . PHP_EOL, FILE_APPEND);
     islandora_bagit_create_bag($object_get);
-  // Still todo: Update the PRESERVATION datastream to timestamp successful preservation
 
+  // Update the PRESERVATION datastream to timestamp successful preservation
+    $ds = $object_get["PRESERVATION"]->content;
+    $dom = new DOMDocument();
+    $dom->preserveWhiteSpace = FALSE;
+    $dom->formatOutput = TRUE;
+    $dom->loadXML($ds);
+    
+    $fragment = "<confirmPreserved>" . $timestamp . "</confirmPreserved>";
+    $frag = $dom->createDocumentFragment();
+    $frag->appendXML($fragment);
+    $dom->documentElement->appendChild($frag);
+    $ds = $dom->saveXML($dom->documentElement);
   }
 
 //    variable_set('islandora_westvault_last_run', $timestamp);
