@@ -25,3 +25,16 @@ function islandora_westvault_get_preservation_targets() {
   }  
   return $objects;
 }
+
+/**
+ * Implements hook_islandora_bagit_post_create().
+ *
+ * @param string $pid
+ *   The PID of the Islandora object that the Bag was just created for.
+ *
+ * @param string $bag_path
+ *  The path to the Bag, relative to the Drupal installation directory.
+ */
+function islandora_westvault_islandora_bagit_post_create($pid, $bag_path) {
+
+}
