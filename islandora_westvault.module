@@ -103,22 +103,20 @@ function islandora_westvault_cron() {
     file_put_contents($pid_location . 'object_list.txt', $object . PHP_EOL, FILE_APPEND);
     islandora_bagit_create_bag($object_get);
 
-  // Update the PRESERVATION datastream to timestamp successful preservation
-    $ds = $object_get["PRESERVATION"]->content;
+    // Update the PRESERVATION datastream to timestamp successful preservation
+    $ds = $object_get["PRESERVATION"];
+    $ds_content = $ds->content;
     $dom = new DOMDocument();
     $dom->preserveWhiteSpace = FALSE;
     $dom->formatOutput = TRUE;
-    $dom->loadXML($ds);
+    $dom->loadXML($ds_content);
     
     $fragment = "<confirmPreserved>" . $timestamp . "</confirmPreserved>";
     $frag = $dom->createDocumentFragment();
     $frag->appendXML($fragment);
     $dom->documentElement->appendChild($frag);
-    $ds = $dom->saveXML($dom->documentElement);
-/* This part doesn't work
-    $preservationDatastream = setContentFromString($ds);
-    $object_get->ingestDatastream($preservationDatastream);
-*/ 
+    $ds_content_updated = $dom->saveXML($dom->documentElement);
+    $ds->setContentFromString($ds_content_updated);
   }
 //    variable_set('islandora_westvault_last_run', $timestamp);
 }
