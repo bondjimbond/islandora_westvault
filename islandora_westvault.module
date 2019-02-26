@@ -97,8 +97,6 @@ function islandora_westvault_cron() {
     file_put_contents($pid_location . 'object_list.txt', $object . PHP_EOL, FILE_APPEND);
     islandora_bagit_create_bag($object_get);
 
-//    islandora_westvault_bagit_post_create($object, variable_get('islandora_bagit_bag_output_dir', '/tmp'));
-    
     // Update the PRESERVATION datastream to timestamp successful preservation
     $ds = $object_get["PRESERVATION"];
     $ds_content = $ds->content;
