@@ -36,7 +36,10 @@ function islandora_westvault_get_preservation_targets() {
  *  The path to the Bag, relative to the Drupal installation directory.
  */
 function islandora_westvault_islandora_bagit_post_create($pid, $bag_path) {
+  watchdog('islandora_westvault', 'Post-create initiated', array(), WATCHDOG_NOTICE);
+
   $basename = basename($bag_path);
+  watchdog('islandora_westvault', '!basename found.', array(!basename => $basename), WATCHDOG_NOTICE);
   if (!is_dir('/tmp/foo')) {
     mkdir('/tmp/foo');
   }
