@@ -42,6 +42,7 @@ function islandora_westvault_islandora_bagit_post_create($pid, $bag_path) {
   watchdog('islandora_westvault', '!basename found.', array(!basename => $basename), WATCHDOG_NOTICE);
   if (!is_dir('/tmp/foo')) {
     mkdir('/tmp/foo');
+    watchdog('islandora_westvault', 'Directory created', array(), WATCHDOG_NOTICE);
   }
-  rename(realpath($bag_path), '/tmp/foo' . $basename);
+  rename(realpath($bag_path), '/tmp/foo/' . $basename);
 }
