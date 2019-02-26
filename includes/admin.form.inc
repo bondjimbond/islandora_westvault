@@ -17,11 +17,11 @@
  *   The Drupal form definition.
  */
 function islandora_westvault_admin(array $form, array &$form_state) {
-  $form['islandora_westvault_lockss_endpoint'] = array(
+  $form['islandora_westvault_owncloud_path'] = array(
     '#type' => 'textfield',
-    '#title' => t('LOCKSS endpoint'),
-    '#description' => t('URL to your LOCKSS API endpoint.'),
-    '#default_value' => variable_get('islandora_westvault_lockss_endpoint', ''),
+    '#title' => t('OwnCloud Path'),
+    '#description' => t('Path to your OwnCloud sync directory. Include trailing slash.'),
+    '#default_value' => variable_get('islandora_westvault_owncloud_path', '/tmp/owncloud/'),
   );
   $form['islandora_westvault_pid_file_location'] = array(
     '#type' => 'textfield',
