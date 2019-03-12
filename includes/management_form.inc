@@ -45,12 +45,8 @@ function islandora_westvault_form($form, &$form_state, AbstractObject $object) {
       ),
     );
 
-        module_load_include('module', 'islandora_basic_collection');
-        $collection_children = islandora_basic_collection_get_member_objects($object);
-//print_r($collection_children[1]);
-foreach ($collection_children[1] AS $child) {
-  print_r($child['object']['value']);
-}
+    module_load_include('module', 'islandora_basic_collection');
+    $collection_children = islandora_basic_collection_get_member_objects($object);
   }
   $form['actions']['submit'] = array(
     '#type' => 'submit',
@@ -63,27 +59,16 @@ foreach ($collection_children[1] AS $child) {
 function islandora_westvault_form_submit($form, &$form_state) {
   $object = islandora_object_load(arg(2));
   if ($form_state['values']['islandora_westvault_preserve_object'] === 1) {
-/*    if (empty($object['PRESERVATION'])) {
-      $time = time();
-      $ds = $object->constructDatastream('PRESERVATION', 'X');
-      $ds->label = 'WestVault Preservation data';
-      $ds->setContentFromString('<preservation>
-  <datePreserved>' . date("Y-m-d H:i:s", $time) . '</datePreserved>
-  <preservedTimestamp>' . $time . '</preservedTimestamp>
-  </preservation>');
-      $object->ingestDatastream($ds);
-      drupal_set_message('Preservation data created'); */
     islandora_westvault_add_preservation_datastream($object);
-      if (in_array('islandora:collectionCModel', $object->models)) {
+    if (in_array('islandora:collectionCModel', $object->models)) {
       // Copy the PRESERVATION info to all the children.
-        module_load_include('module', 'islandora_basic_collection');
-        $collection_children = islandora_basic_collection_get_member_objects($object);
-        foreach ($collection_children[1] AS $child) {
-          // Apply the PRESERVATION datastream!
-          islandora_westvault_add_preservation_datastream($child);
-//        }
+      module_load_include('module', 'islandora_basic_collection');
+      $collection_children = islandora_basic_collection_get_member_objects($object);
+      foreach ($collection_children[1] AS $child) {
+        // Apply the PRESERVATION datastream!
+        $child_object = islandora_object_load($child['object']['value']);
+        islandora_westvault_add_preservation_datastream($child_object);
       }
-
     }
   }
   else {
