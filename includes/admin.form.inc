@@ -31,14 +31,14 @@ function islandora_westvault_admin(array $form, array &$form_state) {
   );
   $form['islandora_westvault_credentials_user'] = array(
     '#type' => 'textfield',
-    '#title' => t('WestVault user ID'),
-    '#description' => t('User ID for WestVault API'),
+    '#title' => t('OwnCloud user ID'),
+    '#description' => t('Your user ID for the OwnCloud account associated with your WestVault account.'),
     '#default_value' => variable_get('islandora_westvault_credentials_user', ''),
   );
   $form['islandora_westvault_credentials_password'] = array(
     '#type' => 'textfield',
-    '#title' => t('WestVault password'),
-    '#description' => t('Password for WestVault API'),
+    '#title' => t('OwnCloud password'),
+    '#description' => t('Your password for the OwnCloud account associated with your WestVault account.'),
     '#default_value' => variable_get('islandora_westvault_credentials_password', ''),
   );
   return system_settings_form($form);
