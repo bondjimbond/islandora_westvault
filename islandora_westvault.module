@@ -112,7 +112,7 @@ function islandora_westvault_cron() {
     $ds_content_updated = $dom->saveXML($dom->documentElement);
     $ds->setContentFromString($ds_content_updated);
   }
-//    variable_set('islandora_westvault_last_run', $timestamp);
+  islandora_westvault_owncloud_sync();
 }
 
 /**

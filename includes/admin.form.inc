@@ -23,6 +23,12 @@ function islandora_westvault_admin(array $form, array &$form_state) {
     '#description' => t('Path to your OwnCloud sync directory. Include trailing slash.'),
     '#default_value' => variable_get('islandora_westvault_owncloud_path', '/tmp/owncloud/'),
   );
+  $form['islandora_westvault_endpoint'] = array(
+    '#type' => 'textfield',
+    '#title' => t('OwnCloud Path'),
+    '#description' => t('URL to your OwnCloud WestVault directory.sync directory. No trailing slash.'),
+    '#default_value' => variable_get('islandora_westvault_endpoint', 'https://deposit.coppul.ca/remote.php/webdav/lockss-preserved'),
+  );
   $form['islandora_westvault_pid_file_location'] = array(
     '#type' => 'textfield',
     '#title' => t('Temporary file location'),
