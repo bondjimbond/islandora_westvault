@@ -16,12 +16,6 @@
  *   Returns the form.
  */
 function islandora_westvault_form($form, &$form_state, AbstractObject $object) {
-
-// Just testing the utilities
-module_load_include('inc', 'islandora_westvault', 'includes/utilities');
-    $object_list = islandora_westvault_get_preservation_targets();
-print_r($object_list);
-
   $pid = $object->id;
   if ($object['PRESERVATION']) {
     $checkbox_default = 1;
@@ -36,6 +30,24 @@ print_r($object_list);
     '#description' => 'Checking this box creates a PRESERVATION datastream, which will flag this object for preservation on the next cron run.
       Un-checking this box will delete the PRESERVATION datastream, which will not delete the preserved objects, but stop the preservation of updates to the object.',
   );
+
+
+// Special treatment for Collection objects
+  if (in_array('islandora:collectionCModel', $object->models)) {
+    module_load_include('inc', 'islandora', 'includes/utilities');
+    $form['islandora_westvault_collection'] = array(
+      '#type' => 'select',
+      '#title' => t('Apply preservation policy to:'),
+      '#options' => array(
+        'newchildren' => t('New children of this collection'),
+        'allchildren' => t('All children of this collection'),
+        'deep_traversal' => t('All children of this collection and collections within this collection (existing and new).'),
+      ),
+    );
+
+    module_load_include('module', 'islandora_basic_collection');
+    $collection_children = islandora_basic_collection_get_member_objects($object);
+  }
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save Configuration'),
@@ -47,7 +59,26 @@ print_r($object_list);
 function islandora_westvault_form_submit($form, &$form_state) {
   $object = islandora_object_load(arg(2));
   if ($form_state['values']['islandora_westvault_preserve_object'] === 1) {
-    if (empty($object['PRESERVATION'])) {
+    islandora_westvault_add_preservation_datastream($object);
+    if (in_array('islandora:collectionCModel', $object->models)) {
+      // Copy the PRESERVATION info to all the children.
+      module_load_include('module', 'islandora_basic_collection');
+      $collection_children = islandora_basic_collection_get_member_objects($object);
+      foreach ($collection_children[1] AS $child) {
+        // Apply the PRESERVATION datastream!
+        $child_object = islandora_object_load($child['object']['value']);
+        islandora_westvault_add_preservation_datastream($child_object);
+      }
+    }
+  }
+  else {
+    $object->purgeDatastream('PRESERVATION');
+    drupal_set_message('Preservation data removed');
+  }
+}
+
+function islandora_westvault_add_preservation_datastream($object) {
+  if (empty($object['PRESERVATION'])) {
       $time = time();
       $ds = $object->constructDatastream('PRESERVATION', 'X');
       $ds->label = 'WestVault Preservation data';
@@ -57,26 +88,5 @@ function islandora_westvault_form_submit($form, &$form_state) {
   </preservation>');
       $object->ingestDatastream($ds);
       drupal_set_message('Preservation data created');
-    }
   }
-  else {
-    $object->purgeDatastream('PRESERVATION');
-    drupal_set_message('Preservation data removed');
-  }
-}
-
-function islandora_westvault_collection_manage_form(array $form, array &$form_state) {
-  print_r('Hi hi');
-  $form['islandora_westvault_preserve_object'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Preserve this object?'),
-//    '#return_value' => 1,
-    '#default_value' => variable_get('islandora_westvault_preserve_object', FALSE),
-  );
-  $form['actions']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save Configuration'),
-    '#weight' => 0,
-  );
-  return array($form);
 }
