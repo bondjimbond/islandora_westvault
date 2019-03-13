@@ -39,10 +39,18 @@ function islandora_westvault_islandora_bagit_post_create($pid, $bag_path) {
   watchdog('islandora_westvault', 'Post-create initiated', array(), WATCHDOG_NOTICE);
   $final_path = variable_get('islandora_westvault_owncloud_path', '/tmp/owncloud/');
   $basename = basename($bag_path);
-  watchdog('islandora_westvault', '!basename found.', array(!basename => $basename), WATCHDOG_NOTICE);
   if (!is_dir($final_path)) {
     mkdir($final_path);
     watchdog('islandora_westvault', 'Directory created', array(), WATCHDOG_NOTICE);
   }
   rename(realpath($bag_path), $final_path . $basename);
+}
+
+function islandora_westvault_owncloud_sync() {
+  $owncloud_dir = variable_get('islandora_westvault_owncloud_path', '/tmp/owncloud/');
+  $user = variable_get('islandora_westvault_credentials_user', '');
+  $password = variable_get('islandora_westvault_credentials_password', '');
+  $endpoint = variable_get('islandora_westvault_endpoint', 'https://deposit.coppul.ca/remote.php/webdav/lockss-preserved');
+  $command = 'owncloudcdm -u ' . $user . ' -p ' . $password . ' ' . $owncloud_dir . ' ' . $endpoint;
+  exec($command);
 }
