@@ -39,7 +39,6 @@ function islandora_westvault_islandora_bagit_post_create($pid, $bag_path) {
   watchdog('islandora_westvault', 'Post-create initiated', array(), WATCHDOG_NOTICE);
   $final_path = variable_get('islandora_westvault_owncloud_path', '/tmp/owncloud/');
   $basename = basename($bag_path);
-  watchdog('islandora_westvault', '!basename found.', array(!basename => $basename), WATCHDOG_NOTICE);
   if (!is_dir($final_path)) {
     mkdir($final_path);
     watchdog('islandora_westvault', 'Directory created', array(), WATCHDOG_NOTICE);
