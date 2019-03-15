@@ -112,13 +112,3 @@ function islandora_westvault_cron() {
   }
   islandora_westvault_owncloud_sync();
 }
-
-/**
- * Set an item to be preserved.
- */
-function islandora_westvault_set_preservation($object) {
-  if (empty($object['PRESERVATION'])) {
-    $ds = $object->constructDatastream('PRESERVATION', 'X');
-    $object->ingestDatastream($ds);
-  }
-}
