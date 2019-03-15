@@ -3,5 +3,6 @@ description = Automates preservation of Islandora objects in WestVault.
 configure = admin/islandora/tools/westvault
 package = Islandora Tools
 dependencies[] = islandora
+dependencies[] = islandora_bagit
 core = 7.x
 version = 7.x-dev
