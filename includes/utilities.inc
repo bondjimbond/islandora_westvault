@@ -51,6 +51,8 @@ function islandora_westvault_owncloud_sync() {
   $user = variable_get('islandora_westvault_credentials_user', '');
   $password = variable_get('islandora_westvault_credentials_password', '');
   $endpoint = variable_get('islandora_westvault_endpoint', 'https://deposit.coppul.ca/remote.php/webdav/lockss-preserved');
-  $command = 'owncloudcdm -u ' . $user . ' -p ' . $password . ' ' . $owncloud_dir . ' ' . $endpoint;
-  exec($command);
+  $command = 'owncloudcmd -u ' . $user . ' -p ' . $password . ' ' . $owncloud_dir . ' ' . $endpoint;
+  $output = shell_exec($command);
+  watchdog('islandora_westvault', 'Command executed:' . $command, array(), WATCHDOG_NOTICE); 
+  watchdog('islandora_westvault', 'Command results:' . $output, array(), WATCHDOG_NOTICE);
 }
