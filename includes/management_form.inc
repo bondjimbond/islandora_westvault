@@ -34,10 +34,18 @@ function islandora_westvault_form($form, &$form_state, AbstractObject $object) {
 
 // Special treatment for Collection objects
   if (in_array('islandora:collectionCModel', $object->models)) {
+    $ds = $object["PRESERVATION"];
+    $options_default = 'allchildren';
+    if (!empty($ds)) {
+      $xml = simplexml_load_string($ds->content);
+      $options_default = $xml->preservationMethod;
+    }  
+
     module_load_include('inc', 'islandora', 'includes/utilities');
     $form['islandora_westvault_collection'] = array(
       '#type' => 'select',
       '#title' => t('Apply preservation policy to:'),
+      '#default_value' => $options_default,
       '#options' => array(
         'newchildren' => t('New children of this collection (excludes current children)'),
         'allchildren' => t('All children of this collection (existing and new)'),
@@ -89,7 +97,7 @@ function islandora_westvault_add_preservation_datastream($object, &$form_state =
   <preservedTimestamp>' . $time . '</preservedTimestamp>';
       if (in_array('islandora:collectionCModel', $object->models)) {
         $preservation_method = $form_state['values']['islandora_westvault_collection'];
-dd($preservation_method);
+        $content_string = $content_string . '<preservationMethod>' . $preservation_method . '</preservationMethod>';
         if ($preservation_method == 'allchildren' || $preservation_method == 'newchildren') {
           $content_string = $content_string . '<preserveNewChildren>TRUE</preserveNewChildren>';
         }
