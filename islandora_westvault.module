@@ -124,13 +124,13 @@ function islandora_westvault_islandora_object_ingested(AbstractObject $object) {
     $ds = $parent_test["PRESERVATION"];
     if (!empty($ds)) {
       $xml = simplexml_load_string($ds->content);
-      if (!isset($xml->preserveNewChildren)) {
-        $preserve_children = FALSE;
-      }
-      else {
+      if ($xml->preservationMethod == 'allchildren' || $xml->preservationMethod == 'newchildren') {
         // As soon as a parent with a PRESERVATION datastream is encountered, exit the loop.
         $preserve_children = TRUE;
         break;
+      }
+      else {
+        $preserve_children = FALSE;
       }      
     }
   }

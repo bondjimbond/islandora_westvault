@@ -31,8 +31,7 @@ function islandora_westvault_form($form, &$form_state, AbstractObject $object) {
       Un-checking this box will delete the PRESERVATION datastream, which will not delete the preserved objects, but stop the preservation of updates to the object.',
   );
 
-
-// Special treatment for Collection objects
+  // For Collection objects, select method for preserving children.
   if (in_array('islandora:collectionCModel', $object->models)) {
     $ds = $object["PRESERVATION"];
     $options_default = 'allchildren';
@@ -40,7 +39,7 @@ function islandora_westvault_form($form, &$form_state, AbstractObject $object) {
       $xml = simplexml_load_string($ds->content);
       $options_default = $xml->preservationMethod;
     }  
-
+    // Is the include line below actually needed?
     module_load_include('inc', 'islandora', 'includes/utilities');
     $form['islandora_westvault_collection'] = array(
       '#type' => 'select',
@@ -68,9 +67,10 @@ function islandora_westvault_form_submit($form, &$form_state) {
   if ($form_state['values']['islandora_westvault_preserve_object'] === 1) {
     islandora_westvault_add_preservation_datastream($object, $form_state);
     if (in_array('islandora:collectionCModel', $object->models)) {
-      // Copy the PRESERVATION info to all the children.
+      // If this is a collection, proceed with changes to child objects.
       if ($form_state['values']['islandora_westvault_collection'] == 'allchildren' || 
       $form_state['values']['islandora_westvault_collection'] == 'currentchildren') {
+        // Create preservation datastreams on all applicable child objects.
         module_load_include('module', 'islandora_basic_collection');
         $collection_children = islandora_basic_collection_get_member_objects($object);
         foreach ($collection_children[1] AS $child) {
@@ -88,6 +88,19 @@ function islandora_westvault_form_submit($form, &$form_state) {
 }
 
 function islandora_westvault_add_preservation_datastream($object, &$form_state = NULL) {
+  if (!empty($object['PRESERVATION'])) {
+  // Check if it's a preserved Collection. Then check if the preservation method has changed.
+  // If it has, purge and recreate the PRESERVATION datastream.
+    if (in_array('islandora:collectionCModel', $object->models)) {
+      $ds = $object["PRESERVATION"];
+      $xml = simplexml_load_string($ds->content);
+      $original_method = $xml->preservationMethod;
+      $selected_method = $form_state['values']['islandora_westvault_collection'];
+      if ($selected_method != $original_method) {
+        $object->purgeDatastream('PRESERVATION');
+      }
+    }
+  }
   if (empty($object['PRESERVATION'])) {
       $time = time();
       $ds = $object->constructDatastream('PRESERVATION', 'X');
@@ -98,9 +111,6 @@ function islandora_westvault_add_preservation_datastream($object, &$form_state =
       if (in_array('islandora:collectionCModel', $object->models)) {
         $preservation_method = $form_state['values']['islandora_westvault_collection'];
         $content_string = $content_string . '<preservationMethod>' . $preservation_method . '</preservationMethod>';
-        if ($preservation_method == 'allchildren' || $preservation_method == 'newchildren') {
-          $content_string = $content_string . '<preserveNewChildren>TRUE</preserveNewChildren>';
-        }
       }
       $content_string = $content_string . '</preservation>';
 
