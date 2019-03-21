@@ -67,7 +67,6 @@ function islandora_westvault_cron() {
   $timestamp = time();
   // Run the thing, then set the last-update variable.
   $object_list = islandora_westvault_get_preservation_targets();  
-dd($object_list);
   // Eliminate already-preserved objects from list
   $filtered_list = array();
   foreach ($object_list AS $object) {
@@ -78,8 +77,6 @@ dd($object_list);
     if (!isset($xml->confirmPreserved)) {    
       $filtered_list[] = $object;
     }
-dd('filtered list:');
-dd($filtered_list);
   }
   global $base_url;
   $sitename = parse_url($base_url);
