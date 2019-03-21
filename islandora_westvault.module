@@ -78,6 +78,8 @@ dd($object_list);
     if (!isset($xml->confirmPreserved)) {    
       $filtered_list[] = $object;
     }
+dd('filtered list:');
+dd($filtered_list);
   }
   global $base_url;
   $sitename = parse_url($base_url);
@@ -85,24 +87,25 @@ dd($object_list);
   module_load_include('module', 'islandora_bagit');
   foreach ($filtered_list AS $object) {
     $object_get = islandora_object_load($object);
-    islandora_bagit_create_bag($object_get);
-
-    // Update the PRESERVATION datastream to timestamp successful preservation
-    $ds = $object_get["PRESERVATION"];
-    $ds_content = $ds->content;
-    $dom = new DOMDocument();
-    $dom->preserveWhiteSpace = FALSE;
-    $dom->formatOutput = TRUE;
-    $dom->loadXML($ds_content);
+    // Bag-it does not work on collections.
+    if (!in_array('islandora:collectionCModel', $object_get->models)) {
+      islandora_bagit_create_bag($object_get);
+      // Update the PRESERVATION datastream to timestamp successful preservation
+      $ds = $object_get["PRESERVATION"];
+      $ds_content = $ds->content;
+      $dom = new DOMDocument();
+      $dom->preserveWhiteSpace = FALSE;
+      $dom->formatOutput = TRUE;
+      $dom->loadXML($ds_content);
     
-    $fragment = "<confirmPreserved>" . $timestamp . "</confirmPreserved>";
-    $frag = $dom->createDocumentFragment();
-    $frag->appendXML($fragment);
-    $dom->documentElement->appendChild($frag);
-    $ds_content_updated = $dom->saveXML($dom->documentElement);
-    $ds->setContentFromString($ds_content_updated);
+      $fragment = "<confirmPreserved>" . $timestamp . "</confirmPreserved>";
+      $frag = $dom->createDocumentFragment();
+      $frag->appendXML($fragment);
+      $dom->documentElement->appendChild($frag);
+      $ds_content_updated = $dom->saveXML($dom->documentElement);
+      $ds->setContentFromString($ds_content_updated);
+    }
   }
-  islandora_westvault_owncloud_sync();
 }
 
 /* 
