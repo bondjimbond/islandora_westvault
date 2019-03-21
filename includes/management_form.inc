@@ -83,7 +83,7 @@ function islandora_westvault_form_submit($form, &$form_state) {
   }
   else {
     $object->purgeDatastream('PRESERVATION');
-    drupal_set_message('Preservation data removed');
+    drupal_set_message(t('Preservation data removed'));
   }
 }
 
@@ -116,6 +116,6 @@ function islandora_westvault_add_preservation_datastream($object, &$form_state =
 
       $ds->setContentFromString($content_string);
       $object->ingestDatastream($ds);
-      drupal_set_message('Preservation data created');
+      drupal_set_message(t('Preservation data created'));
   }
 }
