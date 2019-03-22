@@ -121,12 +121,9 @@ function islandora_westvault_islandora_object_ingested(AbstractObject $object) {
         $preserve_children = TRUE;
         break;
       }
-      else {
-        $preserve_children = FALSE;
-      }      
     }
   }
-  if ($preserve_children == TRUE) {
+  if (isset($preserve_children)) {
     module_load_include('inc', 'islandora_westvault', 'includes/management_form');
     islandora_westvault_add_preservation_datastream($object);
   }
