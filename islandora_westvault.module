@@ -67,7 +67,6 @@ function islandora_westvault_cron() {
   $timestamp = time();
   // Run the thing, then set the last-update variable.
   $object_list = islandora_westvault_get_preservation_targets();  
-
   // Eliminate already-preserved objects from list
   $filtered_list = array();
   foreach ($object_list AS $object) {
@@ -81,36 +80,29 @@ function islandora_westvault_cron() {
   }
   global $base_url;
   $sitename = parse_url($base_url);
-  $pid_location = '/tmp/' . $sitename['host'] . '/';
-  if (!is_dir($pid_location)) {
-    mkdir($pid_location);
-  }
-  // Clear out the previous list of PIDs. Note that we probably don't need this list.
   // Use bag-it
   module_load_include('module', 'islandora_bagit');
-  file_put_contents($pid_location . 'object_list.txt', '');
-
   foreach ($filtered_list AS $object) {
     $object_get = islandora_object_load($object);
-    file_put_contents($pid_location . 'object_list.txt', $object . PHP_EOL, FILE_APPEND);
-    islandora_bagit_create_bag($object_get);
-
-    // Update the PRESERVATION datastream to timestamp successful preservation
-    $ds = $object_get["PRESERVATION"];
-    $ds_content = $ds->content;
-    $dom = new DOMDocument();
-    $dom->preserveWhiteSpace = FALSE;
-    $dom->formatOutput = TRUE;
-    $dom->loadXML($ds_content);
+    // Bag-it does not work on collections.
+    if (!in_array('islandora:collectionCModel', $object_get->models)) {
+      islandora_bagit_create_bag($object_get);
+      // Update the PRESERVATION datastream to timestamp successful preservation
+      $ds = $object_get["PRESERVATION"];
+      $ds_content = $ds->content;
+      $dom = new DOMDocument();
+      $dom->preserveWhiteSpace = FALSE;
+      $dom->formatOutput = TRUE;
+      $dom->loadXML($ds_content);
     
-    $fragment = "<confirmPreserved>" . $timestamp . "</confirmPreserved>";
-    $frag = $dom->createDocumentFragment();
-    $frag->appendXML($fragment);
-    $dom->documentElement->appendChild($frag);
-    $ds_content_updated = $dom->saveXML($dom->documentElement);
-    $ds->setContentFromString($ds_content_updated);
+      $fragment = "<confirmPreserved>" . $timestamp . "</confirmPreserved>";
+      $frag = $dom->createDocumentFragment();
+      $frag->appendXML($fragment);
+      $dom->documentElement->appendChild($frag);
+      $ds_content_updated = $dom->saveXML($dom->documentElement);
+      $ds->setContentFromString($ds_content_updated);
+    }
   }
-  islandora_westvault_owncloud_sync();
 }
 
 /* 
@@ -119,17 +111,23 @@ function islandora_westvault_cron() {
 function islandora_westvault_islandora_object_ingested(AbstractObject $object) {
   module_load_include('module', 'islandora_basic_collection');
   $parent_collections = islandora_get_parents_from_rels_ext($object);
-  dd($parent_collections);
   foreach ($parent_collections AS $parent) {
     $parent_test = islandora_object_load($parent);
     $ds = $parent_test["PRESERVATION"];
     if (!empty($ds)) {
-      $parent_preservation = TRUE;
+      $xml = simplexml_load_string($ds->content);
+      if ($xml->preservationMethod == 'allchildren' || $xml->preservationMethod == 'newchildren') {
+        // As soon as a parent with a PRESERVATION datastream is encountered, exit the loop.
+        $preserve_children = TRUE;
+        break;
+      }
+      else {
+        $preserve_children = FALSE;
+      }      
     }
   }
-  if ($parent_preservation == TRUE) {
+  if ($preserve_children == TRUE) {
     module_load_include('inc', 'islandora_westvault', 'includes/management_form');
     islandora_westvault_add_preservation_datastream($object);
   }
-// For later    $xml = simplexml_load_string($ds->content);
 }
