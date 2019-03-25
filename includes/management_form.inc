@@ -50,6 +50,8 @@ function islandora_westvault_form($form, &$form_state, AbstractObject $object) {
         'allchildren' => t('All children of this collection (existing and new)'),
         'currentchildren' => t('Current children only - new objects will not be preserved'),
       ),
+      '#description' => t('How to handle children of this collection. This setting excludes child collections.
+      Child collections must be configured individually.'),
     );
     module_load_include('module', 'islandora_basic_collection');
     $collection_children = islandora_basic_collection_get_member_objects($object);
@@ -76,7 +78,9 @@ function islandora_westvault_form_submit($form, &$form_state) {
         foreach ($collection_children[1] AS $child) {
           // Apply the PRESERVATION datastream!
           $child_object = islandora_object_load($child['object']['value']);
-          islandora_westvault_add_preservation_datastream($child_object);
+          if (!in_array('islandora:collectionCModel', $child_object->models)) {
+            islandora_westvault_add_preservation_datastream($child_object);
+          }
         }
       }
     }
