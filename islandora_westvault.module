@@ -128,3 +128,11 @@ function islandora_westvault_islandora_object_ingested(AbstractObject $object) {
     islandora_westvault_add_preservation_datastream($object);
   }
 }
+
+/*
+ * Implements hook_islandora_datastream_modified().
+ */
+function islandora_westvault_islandora_datastream_modified(AbstractObject $object, AbstractDatastream $datastream, array $params) {
+  dd($object->id);
+  
+}
