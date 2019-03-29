@@ -84,6 +84,19 @@ function islandora_westvault_form_submit($form, &$form_state) {
         }
       }
     }
+    elseif (in_array('islandora:newspaperCModel', $object->models)) {
+      // Do newspaper things
+    }
+    elseif (in_array('islandora:bookCModel', $object->models)) {
+      // Add PRESERVATION datastream to all pages.
+      module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+      $pages = islandora_paged_content_get_pages($object);
+      dd($pages);
+      foreach ($pages AS $page) {
+        $page_object = islandora_object_load($page['pid']);
+        islandora_westvault_add_preservation_datastream($page_object);
+      }
+    }
   }
   else {
     $object->purgeDatastream('PRESERVATION');
