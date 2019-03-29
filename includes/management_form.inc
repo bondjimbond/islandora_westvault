@@ -86,21 +86,33 @@ function islandora_westvault_form_submit($form, &$form_state) {
     }
     elseif (in_array('islandora:newspaperCModel', $object->models)) {
       // Do newspaper things
-    }
-    elseif (in_array('islandora:bookCModel', $object->models)) {
-      // Add PRESERVATION datastream to all pages.
-      module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
-      $pages = islandora_paged_content_get_pages($object);
-      dd($pages);
-      foreach ($pages AS $page) {
-        $page_object = islandora_object_load($page['pid']);
-        islandora_westvault_add_preservation_datastream($page_object);
+      module_load_include('inc', 'islandora_newspaper', 'includes/utilities');
+      $issues = islandora_newspaper_get_issues($object);
+      dd($issues);
+      foreach ($issues AS $issue) {
+        $issue_object = islandora_object_load($issue['pid']);
+        islandora_westvault_add_preservation_datastream($issue_object);
+        islandora_westvault_preserve_pages($issue);
       }
+    }
+    elseif (in_array('islandora:bookCModel', $object->models) || in_array('islandora:newspaperIssueCModel', $object->models)) {
+      // Add PRESERVATION datastream to all pages.
+      islandora_westvault_preserve_pages($object);
     }
   }
   else {
     $object->purgeDatastream('PRESERVATION');
     drupal_set_message(t('Preservation data removed'));
+  }
+}
+
+function islandora_westvault_preserve_pages($parent) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $parent_object = islandora_object_load($parent['pid']);
+  $pages = islandora_paged_content_get_pages($parent_object);
+  foreach ($pages AS $page) {
+    $page_object = islandora_object_load($page['pid']);
+    islandora_westvault_add_preservation_datastream($page_object);
   }
 }
 
