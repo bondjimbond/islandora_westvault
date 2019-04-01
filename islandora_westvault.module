@@ -110,21 +110,23 @@ function islandora_westvault_cron() {
  */
 function islandora_westvault_islandora_object_ingested(AbstractObject $object) {
   module_load_include('module', 'islandora_basic_collection');
-  $parent_collections = islandora_get_parents_from_rels_ext($object);
-  foreach ($parent_collections AS $parent) {
-    $parent_test = islandora_object_load($parent);
-    $ds = $parent_test["PRESERVATION"];
-    if (!empty($ds)) {
-      $xml = simplexml_load_string($ds->content);
-      if ($xml->preservationMethod == 'allchildren' || $xml->preservationMethod == 'newchildren') {
-        // As soon as a parent with a PRESERVATION datastream is encountered, exit the loop.
-        $preserve_children = TRUE;
-        break;
+  if (!in_array('islandora:collectionCModel', $object->models)) {
+    $parent_collections = islandora_get_parents_from_rels_ext($object);
+    foreach ($parent_collections AS $parent) {
+      $parent_test = islandora_object_load($parent);
+      $ds = $parent_test["PRESERVATION"];
+      if (!empty($ds)) {
+        $xml = simplexml_load_string($ds->content);
+        if ($xml->preservationMethod == 'allchildren' || $xml->preservationMethod == 'newchildren') {
+          // As soon as a parent with a PRESERVATION datastream is encountered, exit the loop.
+          $preserve_children = TRUE;
+          break;
+        }
       }
     }
-  }
-  if (isset($preserve_children)) {
-    module_load_include('inc', 'islandora_westvault', 'includes/management_form');
-    islandora_westvault_add_preservation_datastream($object);
+    if (isset($preserve_children)) {
+      module_load_include('inc', 'islandora_westvault', 'includes/management_form');
+      islandora_westvault_add_preservation_datastream($object);
+    }
   }
 }
