@@ -69,7 +69,7 @@ Once the module is configured and some objects have been flagged for preservatio
 
 In crontab, set a job to run the command "drush westvault-bagit" at some interval, e.g. once per day. Example:
 
-`export PATH=$PATH:/usr/bin/drush 0 30 * * * drush -u 1 westvault-bagit`
+`export PATH=$PATH:/usr/bin/drush 30 0 * * * drush -u 1 westvault-bagit`
 
 The above runs the Drush script every day at 12:30 AM. This script finds all objects with a PRESERVATION datastream, checks whether they have been preserved before,
 then runs Islandora Bagit against the resulting list of objects. Bags are created and then sent to the directory specified in the module configuration.
@@ -79,7 +79,7 @@ then runs Islandora Bagit against the resulting list of objects. Bags are create
 In crontab, set a job to run the command "drush westvault-sync" once per day. This should be set some time later than the westvault-bagit command 
 to ensure that they don't overlap.
 
-`export PATH=$PATH:/usr/bin/drush 4 30 * * * drush -u 1 westvault-sync`
+`export PATH=$PATH:/usr/bin/drush 30 4 * * * drush -u 1 westvault-sync`
 
 ## Troubleshooting/Issues
 
