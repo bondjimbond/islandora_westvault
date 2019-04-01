@@ -122,11 +122,21 @@ function islandora_westvault_islandora_object_ingested(AbstractObject $object) {
           $preserve_children = TRUE;
           break;
         }
+        elseif (in_array('islandora:newspaperCModel', $parent_test->models)) {
+          $preserve_children = TRUE;
+          break;
+        }
       }
     }
     if (isset($preserve_children)) {
       module_load_include('inc', 'islandora_westvault', 'includes/management_form');
       islandora_westvault_add_preservation_datastream($object);
+      // The preserve_pages function cannot take a whole object; it needs an array with the 'pid' key.
+      if (in_array('islandora:newspaperIssueCModel', $object->models) || in_array('islandora:bookCModel', $object->models)) {
+        $issue = array();
+        $issue['pid'] = $object->id;
+        islandora_westvault_preserve_pages($issue);
+      }
     }
   }
 }
