@@ -79,7 +79,7 @@ then runs Islandora Bagit against the resulting list of objects. Bags are create
 In crontab, set a job to run the command "drush westvault-sync" once per day. This should be set some time later than the westvault-bagit command 
 to ensure that they don't overlap.
 
-`export PATH=$PATH:/usr/bin/drush 0 30 * * * drush -u 1 westvault-sync`
+`export PATH=$PATH:/usr/bin/drush 4 30 * * * drush -u 1 westvault-sync`
 
 ## Troubleshooting/Issues
 
