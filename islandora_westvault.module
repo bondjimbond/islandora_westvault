@@ -60,6 +60,7 @@ function islandora_westvault_menu() {
  * Detect objects with a PRESERVATION flag and preserve them. Skip objects already preserved.
  *
  */
+/* we are now moving this to a drush script
 function islandora_westvault_cron() {
   // Goal: Detect objects with the preservation flag and preserve them. Skip objects already preserved.
   module_load_include('inc', 'islandora_westvault', 'includes/utilities');
@@ -103,7 +104,7 @@ function islandora_westvault_cron() {
       $ds->setContentFromString($ds_content_updated);
     }
   }
-}
+} */
 
 /* 
  * Implements hook_islandora_object_ingested().
