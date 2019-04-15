@@ -22,6 +22,10 @@ function islandora_westvault_drush_help($command) {
       return dt('Sync the local Bag directory with the OwnCloud preservation folder.' . 
       'Bags should be left in the directory after syncing. OwnCloud will delete the bags' . 
       'on the next sync after they have been pushed to WestVault.');
+    case 'drush:run-islandora-westvault-bagit':
+      return dt('Create Bags for all objects that have been marked for preservation.' .
+      'Once Bags are generated, they are moved to the configured Owncloud directory.' .
+      'PRESERVATION datastreams are updated so that they are not re-bagged in future.');
     }
 }
 
@@ -37,6 +41,15 @@ function islandora_westvault_drush_command() {
       'Alias example' => 'drush -u 1 westvault-sync',
     ),
     'aliases' => array('westvault-sync'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
+  );
+  $items['run-islandora-westvault-bagit'] = array(
+    'description' => dt('Create Bags for all objects marked for preservation.'),
+    'examples' => array(
+      'Standard example' => 'drush -u 1 run-islandora-westvault-bagit',
+      'Alias example' => 'drush -u 1 westvault-bagit',
+    ),
+    'aliases' => array('westvault-bagit'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
   return $items;
@@ -60,4 +73,48 @@ function drush_islandora_westvault_run_islandora_westvault_sync() {
   $endpoint = variable_get('islandora_westvault_endpoint', 'https://deposit.coppul.ca/remote.php/webdav/lockss-preserved');
   $command = 'owncloudcmd -u ' . $user . ' -p ' . $password . ' ' . $owncloud_dir . ' ' . $endpoint;
   exec($command);
+}
+
+function drush_islandora_westvault_run_islandora_westvault_bagit() {
+  // Goal: Detect objects with the preservation flag and preserve them. Skip objects already preserved.
+  module_load_include('inc', 'islandora_westvault', 'includes/utilities');
+  $timestamp = time();
+  // Prepare list of PIDs with PRESERVATION datastream
+  $object_list = islandora_westvault_get_preservation_targets();  
+  // Eliminate already-preserved objects from list
+  $filtered_list = array();
+  foreach ($object_list AS $object) {
+    $object_test = islandora_object_load($object);
+    // Read the XML from the existing datastream, and look for an "already preserved" tag.
+    $ds = $object_test["PRESERVATION"];
+    $xml = simplexml_load_string($ds->content);
+    if (!isset($xml->confirmPreserved)) {    
+      $filtered_list[] = $object;
+    }
+  }
+  global $base_url;
+  $sitename = parse_url($base_url);
+  // Use bag-it
+  module_load_include('module', 'islandora_bagit');
+  foreach ($filtered_list AS $object) {
+    $object_get = islandora_object_load($object);
+    // Bag-it does not work on collections.
+    if (!in_array('islandora:collectionCModel', $object_get->models)) {
+      islandora_bagit_create_bag($object_get);
+      // Update the PRESERVATION datastream to timestamp successful preservation
+      $ds = $object_get["PRESERVATION"];
+      $ds_content = $ds->content;
+      $dom = new DOMDocument();
+      $dom->preserveWhiteSpace = FALSE;
+      $dom->formatOutput = TRUE;
+      $dom->loadXML($ds_content);
+    
+      $fragment = "<confirmPreserved>" . $timestamp . "</confirmPreserved>";
+      $frag = $dom->createDocumentFragment();
+      $frag->appendXML($fragment);
+      $dom->documentElement->appendChild($frag);
+      $ds_content_updated = $dom->saveXML($dom->documentElement);
+      $ds->setContentFromString($ds_content_updated);
+    }
+  }
 }
