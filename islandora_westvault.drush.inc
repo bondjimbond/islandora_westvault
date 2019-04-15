@@ -22,7 +22,7 @@ function islandora_westvault_drush_help($command) {
       return dt('Sync the local Bag directory with the OwnCloud preservation folder.' . 
       'Bags should be left in the directory after syncing. OwnCloud will delete the bags' . 
       'on the next sync after they have been pushed to WestVault.');
-    case 'drush:run-islandora-weestvault-bagit':
+    case 'drush:run-islandora-westvault-bagit':
       return dt('Create Bags for all objects that have been marked for preservation.' .
       'Once Bags are generated, they are moved to the configured Owncloud directory.' .
       'PRESERVATION datastreams are updated so that they are not re-bagged in future.');
