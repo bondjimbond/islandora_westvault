@@ -1,0 +1,20 @@
+<?php
+/**
+ * @file
+ * Installation hooks for Islandora WestVault.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function islandora_westvault_uninstall() {
+  $vars = array(
+    islandora_westvault_owncloud_path,
+    islandora_westvault_endpoint,
+    islandora_westvault_pid_file_location,
+    islandora_westvault_credentials_user,
+    islandora_westvault_credentials_password,
+    islandora_westvault_preserve_object,
+  );
+  array_walk($vars, 'variable_del');
+}
