@@ -41,12 +41,41 @@ function islandora_westvault_admin(array $form, array &$form_state) {
     '#description' => t('Your user ID for the OwnCloud account associated with your WestVault account.'),
     '#default_value' => variable_get('islandora_westvault_credentials_user', ''),
   );
+  $passexist = variable_get('islandora_westvault_credentials_password', 0);
+  if (isset($passexist)) {
+    $password_message = "Password is saved.";
+  }
+  else {
+    $password_message = "No password saved.";
+  }
   $form['islandora_westvault_credentials_password'] = array(
-    '#type' => 'textfield',
+    '#type' => 'password',
     '#title' => t('OwnCloud password'),
-    '#description' => t('Your password for the OwnCloud account associated with your WestVault account.'),
-    '#default_value' => variable_get('islandora_westvault_credentials_password', ''),
+    '#description' => t('Your password for the OwnCloud account associated with your WestVault account. Leave blank if password is already saved.
+      <b>Current status: ' . $password_message . '</b>'),
+    '#required' => !isset($passexist),
   );
-  return system_settings_form($form);
+  $form = system_settings_form($form);
+  array_unshift($form['#submit'], 'islandora_westvault_default_password');
+  return $form;
 }
 
+function islandora_westvault_default_password($form, &$form_state) {
+  if ($form_state['values']['islandora_westvault_credentials_password'] == '') {
+    $form_state['values']['islandora_westvault_credentials_password'] = variable_get('islandora_westvault_credentials_password', '');
+  }
+  $form['buttons']['submit'] = array('#type' => 'submit', '#value' => t('Save configuration'));
+  $form['#submit'] = array('islandora_westvault_credentials_password', 'islandora_westvault_admin_submit_form');
+
+  return $form;
+}
+
+function islandora_westvault_admin_submit_form($form, &$form_state) {
+    foreach ($form_state['values'] as $key => $value) {
+    if (is_array($value) && isset($form_state['values']['array_filter'])) {
+      $value = array_keys(array_filter($value));
+    }
+    variable_set($key, $value);
+  }
+  drupal_set_message(t('The settings have been updated!'));
+}
