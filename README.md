@@ -105,9 +105,9 @@ Run separate Cron jobs for each site so that Drush executes in different directo
 - 30 0 * * * cd /var/www/drupal/sites/site1.myrepo.ca && drush -u 1 westvault-bagit
 - 30 1 * * * cd /var/www/drupal/sites/site2.myrepo.ca && drush -u 1 westvault-bagit
 - 30 2 * * * cd /var/www/drupal/sites/site3.myrepo.ca && drush -u 1 westvault-bagit
-- 30 10 * * * cd /var/www/drupal/sites/site1.myrepo.ca && drush -u 1 westvault-bagit
-- 30 11 * * * cd /var/www/drupal/sites/site2.myrepo.ca && drush -u 1 westvault-bagit
-- 30 12 * * * cd /var/www/drupal/sites/site3.myrepo.ca && drush -u 1 westvault-bagit
+- 30 10 * * * cd /var/www/drupal/sites/site1.myrepo.ca && drush -u 1 westvault-sync
+- 30 11 * * * cd /var/www/drupal/sites/site2.myrepo.ca && drush -u 1 westvault-sync
+- 30 12 * * * cd /var/www/drupal/sites/site3.myrepo.ca && drush -u 1 westvault-sync
 
 The above will execute the Bagit and Sync commands in each child site separately, so that their individual settings will be used to carry out the process (OwnCloud accounts, bag storage directories, etc.)
 
