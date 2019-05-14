@@ -90,15 +90,15 @@ to ensure that they don't overlap.
 
 `export PATH=$PATH:/usr/bin/drush 30 4 * * * drush -u 1 westvault-sync`
 
-### Multisites
+## Multisites
 
 If using this tool in a multisite environment, some additional considerations must be made.
 
-#### OwnCloud Local Path
+### OwnCloud Local Path
 
 Make sure that each site uses a different directory here. Otherwise, bags might be sent to the wrong account when synced.
 
-#### Crontab
+### Crontab
 
 Run separate Cron jobs for each site so that Drush executes in different directories. For example, if you have three child sites: 
 
