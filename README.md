@@ -20,6 +20,7 @@ The following Drupal modules are required:
  * [Islandora Collection Solution Pack](https://github.com/islandora/islandora_solution_pack_collection)
  * [Islandora Solr Search](https://github.com/islandora/islandora_solr_search)
  * [Islandora Bag-It](https://github.com/islandora/islandora_bagit)
+ * [Islandora Westvault Extras](https://github.com/mjordan/islandora_westvault_extras)
 
 External tools:
 
@@ -37,12 +38,20 @@ External tools:
 In Islandora:
 
 * OwnCloud Local Path: Set a directory on the server where your Bags will be stored.
-* OwnCloud WebDAV URL: URL to your OwnCloud sync directory. Should end in '/lockss-preserved'.
+* OwnCloud WebDAV URL: URL to your OwnCloud sync directory. Should end in '/lockss-preserved' if using WestVault.
 * OwnCloud user ID and password: Self-explanatory.
 
 In OwnCloud:
 
 * In your WestVault settings (Files->WestVault->Settings), check "Remove completed deposits" to keep your directory clean.
+
+Configuring Islandora Bag-it:
+
+* Change the Collection Batch Type settings to "Collection object only". Islandora Westvault works by preserving individual objects; collection bags with multiple objects in them may cause problems such as duplication in your LOCKSS account.
+
+On your webserver:
+
+* Make sure the directory /tmp/islandora_bagit_tmp is writable.
 
 ## How to use
 
@@ -63,11 +72,11 @@ All Pages of preserved Newspaper Issue objects and Books are also preserved.
 
 ### Bagging objects
 
-** At the moment Bags are generated with Drupal cron. This will change, so the documentation here reflects the anticipated change. **
-
 Once the module is configured and some objects have been flagged for preservation, set up Cron jobs to generate bags and sync with OwnCloud.
 
-In crontab, set a job to run the command "drush westvault-bagit" at some interval, e.g. once per day. Example:
+In crontab, set a job to run the command "drush westvault-bagit" at some interval, e.g. once per day. 
+
+Example:
 
 `export PATH=$PATH:/usr/bin/drush 30 0 * * * drush -u 1 westvault-bagit`
 
@@ -80,6 +89,27 @@ In crontab, set a job to run the command "drush westvault-sync" once per day. Th
 to ensure that they don't overlap.
 
 `export PATH=$PATH:/usr/bin/drush 30 4 * * * drush -u 1 westvault-sync`
+
+### Multisites
+
+If using this tool in a multisite environment, some additional considerations must be made.
+
+#### OwnCloud Local Path
+
+Make sure that each site uses a different directory here. Otherwise, bags might be sent to the wrong account when synced.
+
+#### Crontab
+
+Run separate Cron jobs for each site so that Drush executes in different directories. For example, if you have three child sites: 
+
+- 30 0 * * * cd /var/www/drupal/sites/site1.myrepo.ca && drush -u 1 westvault-bagit
+- 30 1 * * * cd /var/www/drupal/sites/site2.myrepo.ca && drush -u 1 westvault-bagit
+- 30 2 * * * cd /var/www/drupal/sites/site3.myrepo.ca && drush -u 1 westvault-bagit
+- 30 10 * * * cd /var/www/drupal/sites/site1.myrepo.ca && drush -u 1 westvault-bagit
+- 30 11 * * * cd /var/www/drupal/sites/site2.myrepo.ca && drush -u 1 westvault-bagit
+- 30 12 * * * cd /var/www/drupal/sites/site3.myrepo.ca && drush -u 1 westvault-bagit
+
+The above will execute the Bagit and Sync commands in each child site separately, so that their individual settings will be used to carry out the process (OwnCloud accounts, bag storage directories, etc.)
 
 ## Troubleshooting/Issues
 
