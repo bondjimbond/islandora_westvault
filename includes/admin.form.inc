@@ -43,16 +43,19 @@ function islandora_westvault_admin(array $form, array &$form_state) {
   );
   $passexist = variable_get('islandora_westvault_credentials_password', 0);
   if (isset($passexist)) {
-    $password_message = "Password is saved.";
+    $password_message = "Password is saved";
   }
   else {
-    $password_message = "No password saved.";
+    $password_message = "No password saved";
   }
   $form['islandora_westvault_credentials_password'] = array(
     '#type' => 'password',
     '#title' => t('OwnCloud password'),
     '#description' => t('Your password for the OwnCloud account associated with your WestVault account. Leave blank if password is already saved.
-      <b>Current status: ' . $password_message . '</b>'),
+      <b>Current status: @password_message</b>.', array(
+        '@password_message' => $password_message,
+      )
+    ),
     '#required' => !isset($passexist),
   );
   $form = system_settings_form($form);
