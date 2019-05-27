@@ -9,6 +9,7 @@ function islandora_westvault_get_preservation_targets() {
   $qp = new islandoraSolrQueryProcessor();
   $qp->buildQuery($query);
   $qp->solrParams['fl'] = "PID";
+  $qp->solrLimit = 1000000;
   $qp->executeQuery(FALSE);
   try {
     $results = $qp->islandoraSolrResult['response']['objects'];
