@@ -5,5 +5,6 @@ package = Islandora Tools
 dependencies[] = islandora
 dependencies[] = islandora_bagit
 dependencies[] = islandora_westvault_extras
+dependencies[] = islandora_bagit_complex
 core = 7.x
 version = 7.x-dev

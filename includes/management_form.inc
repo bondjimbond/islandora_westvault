@@ -84,6 +84,15 @@ function islandora_westvault_form_submit($form, &$form_state) {
         }
       }
     }
+     elseif (in_array('islandora:newspaperCModel', $object->models)) {
+      // Add Preservation tag to issues
+      module_load_include('inc', 'islandora_newspaper', 'includes/utilities');
+      $issues = islandora_newspaper_get_issues($object);
+      foreach ($issues AS $issue) {
+        $issue_object = islandora_object_load($issue['pid']);
+        islandora_westvault_add_preservation_datastream($issue_object);
+      }
+    }
   }
   else {
     $object->purgeDatastream('PRESERVATION');
