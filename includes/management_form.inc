@@ -84,13 +84,22 @@ function islandora_westvault_form_submit($form, &$form_state) {
         }
       }
     }
-     elseif (in_array('islandora:newspaperCModel', $object->models)) {
+    elseif (in_array('islandora:newspaperCModel', $object->models)) {
       // Add Preservation tag to issues
       module_load_include('inc', 'islandora_newspaper', 'includes/utilities');
       $issues = islandora_newspaper_get_issues($object);
       foreach ($issues AS $issue) {
         $issue_object = islandora_object_load($issue['pid']);
         islandora_westvault_add_preservation_datastream($issue_object);
+      }
+    }
+    // Deal with Compound objects too
+    elseif (in_array('islandora:compoundCModel', $object->models)) {
+      module_load_include('module', 'islandora_compound_object', 'islandora_compound_object');
+      $compound_parts = islandora_compound_object_get_parts($object->id);
+      foreach ($compound_parts AS $part) {
+        $part_object = islandora_object_load($part);
+        islandora_westvault_add_preservation_datastream($part_object);
       }
     }
   }
