@@ -75,6 +75,10 @@ function islandora_westvault_islandora_object_ingested(AbstractObject $object) {
           $preserve_children = TRUE;
           break;
         }
+        elseif (in_array('islandora:compoundCModel', $parent_test->models)) {
+          $preserve_children = TRUE;
+          break;
+        }
       }
     }
     if (isset($preserve_children)) {
