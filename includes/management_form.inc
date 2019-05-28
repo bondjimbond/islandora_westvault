@@ -95,7 +95,7 @@ function islandora_westvault_form_submit($form, &$form_state) {
     }
     // Deal with Compound objects too
     elseif (in_array('islandora:compoundCModel', $object->models)) {
-      module_load_include('module', 'islandora_compound_object', 'islandora_compound_object');
+      module_load_include('module', 'islandora_compound_object');
       $compound_parts = islandora_compound_object_get_parts($object->id);
       foreach ($compound_parts AS $part) {
         $part_object = islandora_object_load($part);
