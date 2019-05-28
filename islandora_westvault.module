@@ -112,9 +112,12 @@ function islandora_westvault_islandora_basic_collection_share_migrate(AbstractOb
 
 function islandora_westvault_islandora_compound_object_children_added_to_parent($object, $parent_pids) {
   module_load_include('module', 'islandora_compound_object');
-  $parent_test = islandora_object_load($parent_pids);
-  $ds = $parent_test["PRESERVATION"];
-  if (!empty($ds)) {
-    islandora_westvault_add_preservation_datastream($object);
+  foreach ($parent_pids AS $parent_pid) {
+    $parent_test = islandora_object_load($parent_pid);
+    $ds = $parent_test["PRESERVATION"];
+    if (!empty($ds)) {
+      module_load_include('inc', 'islandora_westvault', 'includes/management_form');
+      islandora_westvault_add_preservation_datastream($object);
+    }
   }
 }
