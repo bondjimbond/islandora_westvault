@@ -20,6 +20,7 @@ The following Drupal modules are required:
  * [Islandora Collection Solution Pack](https://github.com/islandora/islandora_solution_pack_collection)
  * [Islandora Solr Search](https://github.com/islandora/islandora_solr_search)
  * [Islandora Bag-It](https://github.com/islandora/islandora_bagit)
+ * [Islandora Bag-It Complex](https://github.com/mjordan/islandora_bagit_complex)
  * [Islandora Westvault Extras](https://github.com/mjordan/islandora_westvault_extras)
 
 External tools:
@@ -48,6 +49,8 @@ In OwnCloud:
 Configuring Islandora Bag-it:
 
 * Change the Collection Batch Type settings to "Collection object only". Islandora Westvault works by preserving individual objects; collection bags with multiple objects in them may cause problems such as duplication in your LOCKSS account.
+* Under "Complex Objects", select Books and Newspaper Issues. (Do not select Newspapers or Compound Objects; Islandora Westvault handles their children individually.)
+* Check the "Add WestVault Tags" option.
 
 On your webserver:
 
