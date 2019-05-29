@@ -114,15 +114,15 @@ function islandora_westvault_islandora_basic_collection_share_migrate(AbstractOb
  * Implements hook_islandora_compound_object_children_added_to_parent().
  */
 function islandora_westvault_islandora_compound_object_children_added_to_parent($object, $parent_pids) {
-$object = $object['0'];
-$compound_child = islandora_object_load($object->id);
-  module_load_include('module', 'islandora_compound_object');
-  foreach ($parent_pids AS $parent_pid) {
-    $parent_test = islandora_object_load($parent_pid);
-    $ds = $parent_test["PRESERVATION"];
-    if (!empty($ds)) {
-      module_load_include('inc', 'islandora_westvault', 'includes/management_form');
-      islandora_westvault_add_preservation_datastream($compound_child);
+  foreach ($object AS $new_child) {
+    module_load_include('module', 'islandora_compound_object');
+    foreach ($parent_pids AS $parent_pid) {
+      $parent_test = islandora_object_load($parent_pid);
+      $ds = $parent_test["PRESERVATION"];
+      if (!empty($ds)) {
+        module_load_include('inc', 'islandora_westvault', 'includes/management_form');
+        islandora_westvault_add_preservation_datastream($new_child);
+      }
     }
   }
 }
