@@ -135,7 +135,6 @@ function islandora_westvault_add_preservation_datastream($object, &$form_state =
         $content_string = $content_string . '<preservationMethod>' . $preservation_method . '</preservationMethod>';
       }
       $content_string = $content_string . '</preservation>';
-
       $ds->setContentFromString($content_string);
       $object->ingestDatastream($ds);
       drupal_set_message(t('Preservation data created'));
