@@ -16,7 +16,7 @@ function islandora_westvault_get_preservation_targets() {
     if (!empty($fq)) {
     // delete islandora_compound_object_solr_fq from the list of filters
       $filters = $qp->solrParams['fq'];
-      if (($key = array_search($fq, $filters)) !== false) {
+      if (($key = array_search($fq, $filters)) !== FALSE) {
         unset($filters[$key]);
         $qp->solrParams['fq'] = $filters;
       }
