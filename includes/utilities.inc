@@ -5,6 +5,7 @@
  */
 function islandora_westvault_get_preservation_targets() {
   // Looking for the PRESERVATION datastream
+  module_load_include('module', 'islandora_compound_object');
   $query = "fedora_datastreams_ms:PRESERVATION";
   $qp = new islandoraSolrQueryProcessor();
   $qp->buildQuery($query);
