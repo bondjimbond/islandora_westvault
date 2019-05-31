@@ -9,6 +9,18 @@ function islandora_westvault_get_preservation_targets() {
   $qp = new islandoraSolrQueryProcessor();
   $qp->buildQuery($query);
   $qp->solrParams['fl'] = "PID";
+  // Check islandora_compound_object settings and changes query filters to include compound children if necessary.
+  if (variable_get('islandora_compound_object_hide_child_objects_solr', TRUE)) {
+    $fq = variable_get('islandora_compound_object_solr_fq', '-RELS_EXT_isConstituentOf_uri_mt:[* TO *]');
+    if (!empty($fq)) {
+    // delete islandora_compound_object_solr_fq from the list of filters
+      $filters = $qp->solrParams['fq'];
+      if (($key = array_search($fq, $filters)) !== false) {
+        unset($filters[$key]);
+        $qp->solrParams['fq'] = $filters;
+      }
+    }
+  }
   $qp->solrLimit = 1000000;
   $qp->executeQuery(FALSE);
   try {
