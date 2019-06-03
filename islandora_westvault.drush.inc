@@ -77,6 +77,11 @@ function drush_islandora_westvault_run_islandora_westvault_sync() {
 
 function drush_islandora_westvault_run_islandora_westvault_bagit() {
   // Goal: Detect objects with the preservation flag and preserve them. Skip objects already preserved.
+  module_load_include('module', 'islandora_bagit');
+  $plugins = variable_get('islandora_bagit_object_plugins', array(''), true);
+  if ($plugins['plugin_object_ds_basic'] == '0') {
+    return drush_set_error('DS_BASIC_PLUGIN_MISSING', dt('Please select the plugin "plugin_object_ds_basic" in your Islandora Bagit configuration.'));
+  }
   module_load_include('inc', 'islandora_westvault', 'includes/utilities');
   $timestamp = time();
   // Prepare list of PIDs with PRESERVATION datastream
@@ -99,7 +104,6 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
   foreach ($filtered_list AS $object) {
     $object_get = islandora_object_load($object);
     // Bag-it does not work on collections.
-    if (!in_array('islandora:collectionCModel', $object_get->models)) {
       islandora_bagit_create_bag($object_get);
       // Update the PRESERVATION datastream to timestamp successful preservation
       $ds = $object_get["PRESERVATION"];
@@ -115,6 +119,5 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
       $dom->documentElement->appendChild($frag);
       $ds_content_updated = $dom->saveXML($dom->documentElement);
       $ds->setContentFromString($ds_content_updated);
-    }
   }
 }
