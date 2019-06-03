@@ -78,9 +78,17 @@ function drush_islandora_westvault_run_islandora_westvault_sync() {
 function drush_islandora_westvault_run_islandora_westvault_bagit() {
   // Goal: Detect objects with the preservation flag and preserve them. Skip objects already preserved.
   module_load_include('module', 'islandora_bagit');
-  $plugins = variable_get('islandora_bagit_object_plugins', array(''), true);
+  $plugins = variable_get('islandora_bagit_object_plugins', array(''));
+  $collection_setting = variable_get('islandora_bagit_multiple_bag_type', 'object');
+  $complex_cmodels = variable_get('islandora_bagit_complex_cmodels', array(''));
   if ($plugins['plugin_object_ds_basic'] == '0') {
-    return drush_set_error('DS_BASIC_PLUGIN_MISSING', dt('Please select the plugin "plugin_object_ds_basic" in your Islandora Bagit configuration.'));
+    return drush_set_error('DS_BASIC_PLUGIN_MISSING', dt('Operation aborted. Select the plugin "plugin_object_ds_basic" in your Islandora Bagit configuration.'));
+  }
+  if ($collection_setting !== 'no_children') {
+    return drush_set_error('BAGIT_COLLECTION_CONFIG', dt('Operation aborted. In Islandora Bagit Configuration, select "Collecion object only" under Collection Batch Type.'));
+  }
+  if ($complex_cmodels['islandora:bookCModel'] == '0' || $complex_cmodels['islandora:islandora:newspaperIssueCModel'] == '0' || $complex_cmodels['islandora:compoundCModel'] != '0' || $complex_cmodels['islandora:newspaperCModel'] != '0') {
+    return drush_set_error('BAGIT_COMPLEX_CONFIG', dt('Operation aborted. In Islandora Bagit Configuration, under Complex Objects select only Books and Newspaper Issues.'));
   }
   module_load_include('inc', 'islandora_westvault', 'includes/utilities');
   $timestamp = time();
