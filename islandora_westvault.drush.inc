@@ -82,7 +82,8 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
   $collection_setting = variable_get('islandora_bagit_multiple_bag_type', 'object');
   $complex_cmodels = variable_get('islandora_bagit_complex_cmodels', array(''));
   if ($plugins['plugin_object_ds_basic'] == '0') {
-    return drush_set_error('DS_BASIC_PLUGIN_MISSING', dt('Operation aborted. Select the plugin "plugin_object_ds_basic" in your Islandora Bagit configuration.'));
+    $error_message = t('Operation aborted. Select the plugin "plugin_object_ds_basic" in your Islandora Bagit configuration.');
+    return drush_set_error('DS_BASIC_PLUGIN_MISSING', $error_message);
   }
   if ($collection_setting !== 'no_children') {
     return drush_set_error('BAGIT_COLLECTION_CONFIG', dt('Operation aborted. In Islandora Bagit Configuration, select "Collecion object only" under Collection Batch Type.'));
