@@ -52,6 +52,15 @@ function islandora_westvault_drush_command() {
     'aliases' => array('westvault-bagit'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
+  $items['run-islandora-westvault-validate-bags'] = array(
+    'description' => dt('Validates Bags created by this module.'),
+    'examples' => array(
+      'Standard example' => 'drush -u 1 run-islandora-westvault-validate-bags',
+      'Alias example' => 'drush -u 1 westvault-validate-bags',
+    ),
+    'aliases' => array('westvault-validate-bags'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
+  );
   return $items;
 }
 
@@ -135,5 +144,28 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
       $dom->documentElement->appendChild($frag);
       $ds_content_updated = $dom->saveXML($dom->documentElement);
       $ds->setContentFromString($ds_content_updated);
+  }
+}
+
+function drush_islandora_westvault_run_islandora_westvault_validate_bags() {
+  // Validate a bag at $path.
+  $path = '/tmp/Bag-islandora_7.tgz';
+
+  // Load the BagItPHP library.
+  $bagit_library_dir = variable_get('islandora_bagit_library_dir', 'BagItPHP');
+  if ($bagit_library_path = libraries_get_path($bagit_library_dir)) {
+    require_once $bagit_library_path . '/lib/bagit.php';
+  }
+
+  $bag = new BagIt($path);
+
+  if ($bag->isValid()) {
+    drush_log(dt("Bag at !path validates.", array('!path' => $path), 'info'));
+    foreach ($bag->getBagContents() as $filename) {
+      print $filename . "\n";
+    }
+  }
+  else {
+    drush_log(dt("Bag at !path does not validate.", array('!path' => $path), 'warning'));
   }
 }
