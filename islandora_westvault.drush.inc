@@ -127,7 +127,9 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
 
   // Pass object list to Bag-It
   module_load_include('module', 'islandora_bagit');
-  $bagit_directory = variable_get('islandora_bagit_tmp_dir', file_directory_temp());
+  $bagit_default_dir = variable_get('file_public_path', conf_path() . '/files');
+  $bagit_directory = variable_get('islandora_bagit_bag_output_dir', $bagit_default_dir);
+//$bagit_directory = variable_get('islandora_westvault_owncloud_path', 'tmp/owncloud/');
   $bag_filename_prefix = variable_get('islandora_bagit_bag_name', 'Bag-');
 
   foreach ($filtered_list AS $object) {
