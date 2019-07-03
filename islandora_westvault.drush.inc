@@ -128,8 +128,7 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
   // Pass object list to Bag-It
   module_load_include('module', 'islandora_bagit');
   $bagit_default_dir = variable_get('file_public_path', conf_path() . '/files');
-  $bagit_directory = variable_get('islandora_bagit_bag_output_dir', $bagit_default_dir);
-//$bagit_directory = variable_get('islandora_westvault_owncloud_path', 'tmp/owncloud/');
+  $bagit_directory = variable_get('islandora_westvault_owncloud_path', '/tmp/owncloud/');
   $bag_filename_prefix = variable_get('islandora_bagit_bag_name', 'Bag-');
 
   foreach ($filtered_list AS $object) {
@@ -162,8 +161,8 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
 function islandora_westvault_validate_bag($pid, $bagit_directory, $bag_filename_prefix) {
   $filename_pid = str_replace(array(':', '-'), '_', $pid);
 
-  $bag_file_name = $bag_filename_prefix . $filename_pid;
-  $bag_path = $bagit_directory . DIRECTORY_SEPARATOR . $bag_file_name;
+  $bag_file_name = $bag_filename_prefix . $filename_pid . ".tgz";
+  $bag_path = $bagit_directory . $bag_file_name;
 dd($bag_path);
   $bagit_library_dir = variable_get('islandora_bagit_library_dir', 'BagItPHP');
   if ($bagit_library_path = libraries_get_path($bagit_library_dir)) {
