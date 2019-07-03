@@ -52,15 +52,6 @@ function islandora_westvault_drush_command() {
     'aliases' => array('westvault-bagit'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
-  $items['run-islandora-westvault-validate-bags'] = array(
-    'description' => dt('Validates Bags created by this module.'),
-    'examples' => array(
-      'Standard example' => 'drush -u 1 run-islandora-westvault-validate-bags',
-      'Alias example' => 'drush -u 1 westvault-validate-bags',
-    ),
-    'aliases' => array('westvault-validate-bags'),
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
-  );
   return $items;
 }
 
