@@ -155,8 +155,15 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
       $ds_content_updated = $dom->saveXML($dom->documentElement);
       $ds->setContentFromString($ds_content_updated);
     }
-  // ELSE: We should delte the bag so it doesn't get preserved, and log it.
-
+  // If the bag is not valid, delete it so it doesn't get preserved, and log it.
+    else {
+      $filename_pid = str_replace(array(':', '-'), '_', $object);
+      $bag_file_name = $bag_filename_prefix . $filename_pid . ".tgz";
+      $bag_path = $bagit_directory . $bag_file_name;
+      unlink($bag_path);
+      drush_log(dt("Bag !bag was is missing files and will be removed. Check directory permissions and try again.",
+        array('!bag' => $bag_path), 'warning'));
+    }
   }
 }
 
@@ -193,6 +200,9 @@ function islandora_westvault_validate_bag($pid, $bagit_directory, $bag_filename_
   // Prevents an incorrect 'false' result in the array_search below.
     $bag_contents['zero'] = $bag_contents[0];
     unset($bag_contents[0]);
+
+// FOR TESTING ONLY
+unset($bag_contents['zero']);
 
   // Compare $datastreams to $bag_contents.
     foreach ($datastreams AS $datastream) {
