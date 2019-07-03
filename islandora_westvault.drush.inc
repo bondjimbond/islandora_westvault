@@ -201,9 +201,6 @@ function islandora_westvault_validate_bag($pid, $bagit_directory, $bag_filename_
     $bag_contents['zero'] = $bag_contents[0];
     unset($bag_contents[0]);
 
-// FOR TESTING ONLY
-unset($bag_contents['zero']);
-
   // Compare $datastreams to $bag_contents.
     foreach ($datastreams AS $datastream) {
       $datastream_locator = array_search($datastream, $bag_contents, true);
