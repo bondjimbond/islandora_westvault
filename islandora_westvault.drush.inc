@@ -131,7 +131,7 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
 
     $is_valid = islandora_westvault_validate_bag($object, $bagit_directory, $bag_filename_prefix);
 
-    if($is_valid == TRUE) {
+    if ($is_valid == TRUE) {
       // Update the PRESERVATION datastream to timestamp successful preservation
       $ds = $object_get["PRESERVATION"];
       $ds_content = $ds->content;
@@ -194,7 +194,7 @@ function islandora_westvault_validate_bag($pid, $bagit_directory, $bag_filename_
 
   // Compare $datastreams to $bag_contents.
     foreach ($datastreams AS $datastream) {
-      $datastream_locator = array_search($datastream, $bag_contents, true);
+      $datastream_locator = array_search($datastream, $bag_contents, TRUE);
 
       if ($datastream_locator == FALSE) {
         drush_log(dt("Bag at !path missing the !datastream datastream.", array('!path' => $bag_path, '!datastream' => $datastream), 'warning'));
@@ -210,7 +210,7 @@ function islandora_westvault_validate_bag($pid, $bagit_directory, $bag_filename_
     $is_valid = FALSE;
   }
 
-  return($is_valid);
+  return ($is_valid);
 }
 
 function islandora_westvault_get_datastreams($pid) {
@@ -232,5 +232,5 @@ function islandora_westvault_get_datastreams($pid) {
       $datastreams_array = ($qp->islandoraSolrResult['response']['objects']['0']['solr_doc'][$query_field]);
     }
   }
-  return($datastreams_array);
+  return ($datastreams_array);
 }
