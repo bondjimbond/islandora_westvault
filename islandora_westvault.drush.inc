@@ -124,12 +124,22 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
   }
   global $base_url;
   $sitename = parse_url($base_url);
-  // Use bag-it
+
+  // Pass object list to Bag-It
   module_load_include('module', 'islandora_bagit');
+  $bagit_directory = variable_get('islandora_bagit_tmp_dir', file_directory_temp());
+  $bag_filename_prefix = variable_get('islandora_bagit_bag_name', 'Bag-');
+
   foreach ($filtered_list AS $object) {
     $object_get = islandora_object_load($object);
     // Bag-it does not work on collections.
       islandora_bagit_create_bag($object_get);
+
+      // Now validate bag before updating PRESERVATION
+
+      $is_valid = islandora_westvault_validate_bag($object, $bagit_directory, $bag_filename_prefix);
+
+
       // Update the PRESERVATION datastream to timestamp successful preservation
       $ds = $object_get["PRESERVATION"];
       $ds_content = $ds->content;
@@ -147,25 +157,58 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
   }
 }
 
-function drush_islandora_westvault_run_islandora_westvault_validate_bags() {
-  // Validate a bag at $path.
-  $path = '/tmp/Bag-islandora_7.tgz';
+function islandora_westvault_validate_bag($pid, $bagit_directory, $bag_filename_prefix) {
+  $filename_pid = str_replace(array(':', '-'), '_', $pid);
 
-  // Load the BagItPHP library.
+  $bag_file_name = $bag_filename_prefix . $filename_pid;
+  $bag_path = $bagit_directory . DIRECTORY_SEPARATOR . $bag_file_name;
+dd($bag_path);
   $bagit_library_dir = variable_get('islandora_bagit_library_dir', 'BagItPHP');
   if ($bagit_library_path = libraries_get_path($bagit_library_dir)) {
     require_once $bagit_library_path . '/lib/bagit.php';
   }
-
-  $bag = new BagIt($path);
-
+  $bag = new BagIt($bag_path);
+  $bag_files = array();
   if ($bag->isValid()) {
-    drush_log(dt("Bag at !path validates.", array('!path' => $path), 'info'));
+    drush_log(dt("Bag at !path validates.", array('!path' => $bag_path), 'info'));
     foreach ($bag->getBagContents() as $filename) {
-      print $filename . "\n";
+      $bag_files[] = $filename;
     }
+  // Get the object's Solr document and use the fedora_datastreams_ms field to compare.
+    $datastreams = islandora_westvault_get_datastreams($pid);
+
+    dd($datastreams);
+    dd($bag_files);
+
+    $is_valid = TRUE;
   }
   else {
     drush_log(dt("Bag at !path does not validate.", array('!path' => $path), 'warning'));
+    dd('invalid bag');
+    $is_valid = FALSE;
   }
+
+
+}
+
+function islandora_westvault_get_datastreams($pid) {
+  $qp = new IslandoraSolrQueryProcessor();
+  $qp->buildQuery(format_string('@field:"@pid"', array(
+    '@field' => 'PID',
+    '@pid' => "{$pid}")
+  ));
+  $query_field = 'fedora_datastreams_ms';
+  $qp->solrParams['fl'] = implode(', ', array(
+    'PID',
+    $query_field,
+  ));
+  $qp->solrStart = 0;
+  $qp->solrLimit = 100000;
+  $qp->executeQuery(FALSE);
+  if ($qp->islandoraSolrResult['response']['numFound'] > 0) {
+    if (array_key_exists($query_field, $qp->islandoraSolrResult['response']['objects']['0']['solr_doc'])) {
+      $datastreams_array = ($qp->islandoraSolrResult['response']['objects']['0']['solr_doc'][$query_field]);
+    }
+  }
+  return($datastreams_array);
 }
