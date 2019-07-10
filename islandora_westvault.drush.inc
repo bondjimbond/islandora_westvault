@@ -152,8 +152,10 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
       $bag_file_name = $bag_filename_prefix . $filename_pid . ".tgz";
       $bag_path = $bagit_directory . $bag_file_name;
       unlink($bag_path);
-      drush_log(dt("Bag !bag was is missing files and will be removed. Check directory permissions and try again.",
-        array('!bag' => $bag_path), 'warning'));
+
+      $error_message = dt("Bag !bag was missing files and will be removed. Check directory permissions and try again.",
+        array('!bag' => $bag_path));
+      watchdog("islandora_westvault", '%error_message', array('%error_message' => $error_message), WATCHDOG_ERROR);
     }
   }
 }
