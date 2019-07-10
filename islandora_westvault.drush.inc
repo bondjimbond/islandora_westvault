@@ -115,12 +115,23 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
   }
   global $base_url;
   $sitename = parse_url($base_url);
-  // Use bag-it
+
+  // Pass object list to Bag-It
   module_load_include('module', 'islandora_bagit');
+  $bagit_default_dir = variable_get('file_public_path', conf_path() . '/files');
+  $bagit_directory = variable_get('islandora_westvault_owncloud_path', '/tmp/owncloud/');
+  $bag_filename_prefix = variable_get('islandora_bagit_bag_name', 'Bag-');
+
   foreach ($filtered_list AS $object) {
     $object_get = islandora_object_load($object);
     // Bag-it does not work on collections.
-      islandora_bagit_create_bag($object_get);
+    islandora_bagit_create_bag($object_get);
+
+    // Now validate bag before updating PRESERVATION
+
+    $is_valid = islandora_westvault_validate_bag($object, $bagit_directory, $bag_filename_prefix);
+
+    if ($is_valid == TRUE) {
       // Update the PRESERVATION datastream to timestamp successful preservation
       $ds = $object_get["PRESERVATION"];
       $ds_content = $ds->content;
@@ -128,12 +139,100 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
       $dom->preserveWhiteSpace = FALSE;
       $dom->formatOutput = TRUE;
       $dom->loadXML($ds_content);
-    
       $fragment = "<confirmPreserved>" . $timestamp . "</confirmPreserved>";
       $frag = $dom->createDocumentFragment();
       $frag->appendXML($fragment);
       $dom->documentElement->appendChild($frag);
       $ds_content_updated = $dom->saveXML($dom->documentElement);
       $ds->setContentFromString($ds_content_updated);
+    }
+  // If the bag is not valid, delete it so it doesn't get preserved, and log it.
+    else {
+      $filename_pid = str_replace(array(':', '-'), '_', $object);
+      $bag_file_name = $bag_filename_prefix . $filename_pid . ".tgz";
+      $bag_path = $bagit_directory . $bag_file_name;
+      unlink($bag_path);
+
+      $error_message = dt("Bag !bag was missing files and will be removed. Check directory permissions and try again.",
+        array('!bag' => $bag_path));
+      watchdog("islandora_westvault", '%error_message', array('%error_message' => $error_message), WATCHDOG_ERROR);
+    }
   }
+}
+
+function islandora_westvault_validate_bag($pid, $bagit_directory, $bag_filename_prefix) {
+  $filename_pid = str_replace(array(':', '-'), '_', $pid);
+
+  $bag_file_name = $bag_filename_prefix . $filename_pid . ".tgz";
+  $bag_path = $bagit_directory . $bag_file_name;
+  $bagit_library_dir = variable_get('islandora_bagit_library_dir', 'BagItPHP');
+  if ($bagit_library_path = libraries_get_path($bagit_library_dir)) {
+    require_once $bagit_library_path . '/lib/bagit.php';
+  }
+  $bag = new BagIt($bag_path);
+  $bag_files = array();
+  if ($bag->isValid()) {
+    drush_log(dt("Bag at !path validates.", array('!path' => $bag_path), 'info'));
+    foreach ($bag->getBagContents() as $filename) {
+      $bag_files[] = $filename;
+    }
+  // Get the object's Solr document and use the fedora_datastreams_ms field to compare.
+    $datastreams = islandora_westvault_get_datastreams($pid);
+
+    $bag_contents = array();
+
+    foreach ($bag_files AS $bag_file) {
+      $trimmed_filename = explode("/", $bag_file);
+      $bag_contents[] = explode(".", end($trimmed_filename))[0];
+    }
+
+  // Remove the AUDIT datastream before comparing lists.
+    $audit_key = array_search("AUDIT", $datastreams);
+    unset($datastreams[$audit_key]);
+
+  // Prevents an incorrect 'false' result in the array_search below.
+    $bag_contents['zero'] = $bag_contents[0];
+    unset($bag_contents[0]);
+
+  // Compare $datastreams to $bag_contents.
+    foreach ($datastreams AS $datastream) {
+      $datastream_locator = array_search($datastream, $bag_contents, TRUE);
+
+      if ($datastream_locator == FALSE) {
+        drush_log(dt("Bag at !path missing the !datastream datastream.", array('!path' => $bag_path, '!datastream' => $datastream), 'warning'));
+        $is_valid = FALSE;
+      }
+    }
+    if (!isset($is_valid)) {
+      $is_valid = TRUE;
+    }
+  }
+  else {
+    drush_log(dt("Bag at !path does not validate.", array('!path' => $bag_path), 'warning'));
+    $is_valid = FALSE;
+  }
+
+  return ($is_valid);
+}
+
+function islandora_westvault_get_datastreams($pid) {
+  $qp = new IslandoraSolrQueryProcessor();
+  $qp->buildQuery(format_string('@field:"@pid"', array(
+    '@field' => 'PID',
+    '@pid' => "{$pid}")
+  ));
+  $query_field = 'fedora_datastreams_ms';
+  $qp->solrParams['fl'] = implode(', ', array(
+    'PID',
+    $query_field,
+  ));
+  $qp->solrStart = 0;
+  $qp->solrLimit = 100000;
+  $qp->executeQuery(FALSE);
+  if ($qp->islandoraSolrResult['response']['numFound'] > 0) {
+    if (array_key_exists($query_field, $qp->islandoraSolrResult['response']['objects']['0']['solr_doc'])) {
+      $datastreams_array = ($qp->islandoraSolrResult['response']['objects']['0']['solr_doc'][$query_field]);
+    }
+  }
+  return ($datastreams_array);
 }
