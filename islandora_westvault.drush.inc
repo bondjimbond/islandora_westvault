@@ -153,7 +153,7 @@ function drush_islandora_westvault_run_islandora_westvault_bagit() {
       $bag_path = $bagit_directory . $bag_file_name;
       unlink($bag_path);
 
-      $error_message = dt("Bag !bag was missing files and will be removed. Check directory permissions and try again.",
+      $error_message = dt("Bag !bag has errors and will be removed. Check directory permissions and try again.",
         array('!bag' => $bag_path));
       watchdog("islandora_westvault", '%error_message', array('%error_message' => $error_message), WATCHDOG_ERROR);
     }
@@ -202,6 +202,14 @@ function islandora_westvault_validate_bag($pid, $bagit_directory, $bag_filename_
         drush_log(dt("Bag at !path missing the !datastream datastream.", array('!path' => $bag_path, '!datastream' => $datastream), 'warning'));
         $is_valid = FALSE;
       }
+    }
+
+    $filesize = round(filesize($bag_path) / 1024 / 1024 / 1024, 1);
+    $max_filesize = variable_get(islandora_westvault_max_filesize, '2');
+dd($max_filesize);
+    if ($filesize > $max_filesize) {
+      $is_valid = FALSE;
+      drush_log(dt("Bag at !path is over !maxfile GB and cannot be sent to Westvault.", array('!path' => $bag_path, '!maxfile' => $max_filesize), 'warning'));
     }
     if (!isset($is_valid)) {
       $is_valid = TRUE;
