@@ -1,5 +1,6 @@
 sudo: true
 language: php
+dist: trusty
 matrix:
   include:
    #5.3.3 Ubuntu Precise exceptions
