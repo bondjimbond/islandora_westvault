@@ -206,7 +206,6 @@ function islandora_westvault_validate_bag($pid, $bagit_directory, $bag_filename_
 
     $filesize = round(filesize($bag_path) / 1024 / 1024 / 1024, 1);
     $max_filesize = variable_get(islandora_westvault_max_filesize, '2');
-dd($max_filesize);
     if ($filesize > $max_filesize) {
       $is_valid = FALSE;
       drush_log(dt("Bag at !path is over !maxfile GB and cannot be sent to Westvault.", array('!path' => $bag_path, '!maxfile' => $max_filesize), 'warning'));
