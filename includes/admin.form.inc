@@ -35,6 +35,12 @@ function islandora_westvault_admin(array $form, array &$form_state) {
     '#description' => t('Path to your temporary file where PIDs of objects to be preserved are stored. Include trailing slash.'),
     '#default_value' => variable_get('islandora_westvault_pid_file_location', '/tmp/'),
   );
+  $form['islandora_westvault_max_filesize'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Maximum filesize in Westvault (in GB)'),
+    '#description' => t('The maximum filesize allowed by Westvault, in GB. This is currently 2 GB. Enter an integer only, no units.'),
+    '#default_value' => variable_get('islandora_westvault_max_filesize', '2'),
+  );
   $form['islandora_westvault_credentials_user'] = array(
     '#type' => 'textfield',
     '#title' => t('OwnCloud user ID'),

@@ -1,5 +1,6 @@
 sudo: true
 language: php
+dist: trusty
 matrix:
   include:
    #5.3.3 Ubuntu Precise exceptions
@@ -34,6 +35,9 @@ php:
   - 5.6
   - 7.0
   - 7.1
+
+services:
+  - mysql
 
 branches:
   only:
