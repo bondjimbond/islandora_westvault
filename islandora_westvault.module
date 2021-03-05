@@ -46,8 +46,7 @@ function islandora_westvault_menu() {
   $items['admin/islandora/tools/westvault/objects'] = array(
     'title' => 'Preserved objects list',
     'description' => 'See all preserved objects',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_westvault_show'),
+    'page callback' => 'islandora_westvault_show_form',
     'type' => MENU_LOCAL_TASK,
     'access arguments' => array('ISLANDORA_WESTVAULT_ADMIN'),
   );
@@ -126,3 +125,40 @@ function islandora_westvault_islandora_compound_object_children_added_to_parent(
     }
   }
 }
+
+/**
+ * Displays a table of preserved objects.
+ */
+function islandora_westvault_show_form () {
+  module_load_include('inc', 'islandora_westvault', 'includes/utilities');
+  // Prepare list of PIDs with PRESERVATION datastream
+  $object_list = islandora_westvault_get_preservation_targets();
+  // Eliminate already-preserved objects from list
+  $finished_list = array();
+
+  $header = array('PID', 'Title', 'Status');
+  $rows = array();
+
+
+  foreach ($object_list AS $object) {
+    $object_test = islandora_object_load($object);
+    $ds = $object_test["PRESERVATION"];
+    $xml = simplexml_load_string($ds->content);
+    if (isset($xml->confirmPreserved)) {
+      $preserved = "PRESERVED";
+    }
+    else {
+      $preserved = "PENDING";
+    }
+    $rows[] = array(
+      l($object, 'islandora/object/' . $object, array('attributes'=>array('target' => 'blank'))),
+      $object_test->label,
+      $preserved,
+    );
+  }
+  $table = theme('table', array('header' => $header, 'rows' => $rows));
+  return $table;
+}
+
+
+
